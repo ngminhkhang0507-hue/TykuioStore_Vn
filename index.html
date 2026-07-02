@@ -275,10 +275,9 @@ CHỜ ADMIN DUYỆT
 
 <script>
 // ============================================================
-// CẤU HÌNH PASTEBIN - LẤY DỮ LIỆU TỪ LINK CỦA BẠN
+// CẤU HÌNH PASTEBIN - DÙNG PROXY ĐỂ VƯỢT CORS
 // ============================================================
-// https://pastebin.com/US2iS29z -> Raw link: https://pastebin.com/raw/US2iS29z
-const PASTEBIN_RAW_URL = 'https://pastebin.com/raw/US2iS29z';
+const PASTEBIN_RAW_URL = 'https://api.allorigins.win/raw?url=https://pastebin.com/raw/US2iS29z';
 
 // ============================================================
 // CẤU HÌNH TELEGRAM
@@ -314,15 +313,13 @@ return JSON.parse(localStorage.getItem('tykuio_users'));
 function saveUsers(users) { localStorage.setItem('tykuio_users', JSON.stringify(users)); }
 
 // ============================================================
-// QUẢN LÝ SẢN PHẨM - LOAD TỪ PASTEBIN
+// QUẢN LÝ SẢN PHẨM - LOAD TỪ PASTEBIN QUA PROXY
 // ============================================================
 async function loadProducts() {
     try {
-        // Thêm timestamp để tránh cache
-        const res = await fetch(PASTEBIN_RAW_URL + '?t=' + Date.now());
+        const res = await fetch(PASTEBIN_RAW_URL + '&t=' + Date.now());
         if (res.ok) {
             const data = await res.json();
-            // Lưu vào localStorage để dùng offline
             localStorage.setItem('tykuio_products', JSON.stringify(data));
             return data;
         }
@@ -330,13 +327,11 @@ async function loadProducts() {
         console.log('Lỗi load từ Pastebin:', e);
     }
     
-    // Fallback: lấy từ localStorage
     const local = localStorage.getItem('tykuio_products');
     if (local) {
         try { return JSON.parse(local); } catch(e) {}
     }
     
-    // Mặc định
     const defaultProducts = [
         { id: 1, name: 'Dynamic Drag Limit Ipl', price: 100000, stock: 99999, sold: 0, image: 'https://i.imgur.com/placeholder.jpg', download: 'https://tykuio.store/dynamic.zip', video: 'https://youtube.com' },
         { id: 2, name: 'Triggerbot Dynamic AI', price: 50000, stock: 99999, sold: 0, image: 'https://i.imgur.com/placeholder.jpg', download: 'https://tykuio.store/trigger.zip', video: 'https://youtube.com' },
@@ -349,7 +344,6 @@ async function loadProducts() {
 
 function saveProducts(data) {
     localStorage.setItem('tykuio_products', JSON.stringify(data));
-    // Copy JSON ra clipboard để admin dán vào Pastebin
     const json = JSON.stringify(data, null, 2);
     navigator.clipboard.writeText(json).then(() => {
         toast('✅ Đã copy JSON! Vào Pastebin dán và lưu để mọi người thấy.');
@@ -579,7 +573,6 @@ videoLink: product.video || 'https://youtube.com'
 };
 session.purchases.unshift(purchase);
 
-// Lưu product vào localStorage
 saveProducts(products);
 
 let users = loadUsers();
