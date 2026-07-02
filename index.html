@@ -9,8 +9,6 @@
 <link crossorigin href="https://fonts.gstatic.com" rel="preconnect"/>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-<!-- Supabase -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 * { font-family: 'Space Grotesk', sans-serif; }
 :root { --neon-cyan: #00f0ff; --neon-purple: #a855f7; --dark-bg: #05070a; --dark-card: #0d1117; --dark-surface: #0a0e14; --dark-border: #1e293b; }
@@ -27,7 +25,7 @@ body.loaded { opacity: 1; }
 
 #loader { position: fixed; inset: 0; z-index: 99999; background: #05070a; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.6s ease, visibility 0.6s ease; }
 #loader.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
-.loader-ring { width: 60px; height: 60px; border-radius: 50%; border: 3px solid transparent; border-top-color: #00f0ff; border-right-color: #a855f7; animation: spin 0.8s cubic-bezier(0.6, 0, 0.4, 1) infinite; position: relative; }
+.loader-ring { width: 60px; height: 60px; border-radius: 50%; border: 3px solid transparent; border-top-color: #00f0ff; border-right-color: #a855f7; animation: spin 0.8s cubic-bezier(0.6, 0, 0.4, 1) infinite; }
 .loader-ring::after { content: ''; position: absolute; inset: 6px; border-radius: 50%; border: 3px solid transparent; border-bottom-color: #00f0ff; border-left-color: #a855f7; animation: spin 0.5s cubic-bezier(0.6, 0, 0.4, 1) infinite reverse; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .loader-text { margin-top: 20px; color: #64748b; font-size: 13px; letter-spacing: 2px; font-weight: 500; animation: pulseText 1.5s ease-in-out infinite; }
@@ -91,13 +89,16 @@ body.loaded { opacity: 1; }
 ::-webkit-scrollbar-track { background: #0a0e14; }
 ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: #00f0ff; }
+
+body { user-select: none; -webkit-user-select: none; }
+img, video { -webkit-user-drag: none; user-drag: none; }
 </style>
 </head>
 <body>
 
 <!-- Loader -->
 <div id="loader">
-<div class="loader-ring"></div>
+<div class="loader-ring" style="position:relative;"></div>
 <div class="loader-text">⚡ TYKUIO STORE</div>
 </div>
 
@@ -274,11 +275,10 @@ CHỜ ADMIN DUYỆT
 
 <script>
 // ============================================================
-// CẤU HÌNH SUPABASE
+// CẤU HÌNH PASTEBIN - LẤY DỮ LIỆU TỪ LINK CỦA BẠN
 // ============================================================
-const SUPABASE_URL = 'https://YOUR_PROJECT_ID.supabase.co';
-const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
-const supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_KEY);
+// https://pastebin.com/US2iS29z -> Raw link: https://pastebin.com/raw/US2iS29z
+const PASTEBIN_RAW_URL = 'https://pastebin.com/raw/US2iS29z';
 
 // ============================================================
 // CẤU HÌNH TELEGRAM
@@ -291,15 +291,8 @@ const TELE = { token: '8890805228:AAGxvBFfLcQqybfl38J5NKI66mntppZzGxE', chatId: 
 const ADMIN_USERNAME = 'admin';
 const ADMIN_PASSWORD = '15092007';
 let isLoginMode = true;
-
-// ============================================================
-// BIẾN TOÀN CỤC
-// ============================================================
 let session = null;
 
-// ============================================================
-// TOAST
-// ============================================================
 function toast(msg) {
 const c = document.getElementById('toast-container');
 const el = document.createElement('div');
@@ -309,44 +302,63 @@ c.appendChild(el);
 setTimeout(() => el.remove(), 4000);
 }
 
+function loadUsers() {
+if (!localStorage.getItem('tykuio_users')) {
+localStorage.setItem('tykuio_users', JSON.stringify([
+{ username: 'admin', password: '15092007', balance: 0, purchases: [], topups: [] }
+]));
+}
+return JSON.parse(localStorage.getItem('tykuio_users'));
+}
+
+function saveUsers(users) { localStorage.setItem('tykuio_users', JSON.stringify(users)); }
+
 // ============================================================
-// LOAD PRODUCTS FROM SUPABASE
+// QUẢN LÝ SẢN PHẨM - LOAD TỪ PASTEBIN
 // ============================================================
 async function loadProducts() {
-try {
-const { data, error } = await supabase
-.from('products')
-.select('*')
-.order('id', { ascending: true });
-if (error) throw error;
-return data || [];
-} catch(e) {
-console.error('Lỗi load sản phẩm:', e);
-return [];
-}
+    try {
+        // Thêm timestamp để tránh cache
+        const res = await fetch(PASTEBIN_RAW_URL + '?t=' + Date.now());
+        if (res.ok) {
+            const data = await res.json();
+            // Lưu vào localStorage để dùng offline
+            localStorage.setItem('tykuio_products', JSON.stringify(data));
+            return data;
+        }
+    } catch(e) {
+        console.log('Lỗi load từ Pastebin:', e);
+    }
+    
+    // Fallback: lấy từ localStorage
+    const local = localStorage.getItem('tykuio_products');
+    if (local) {
+        try { return JSON.parse(local); } catch(e) {}
+    }
+    
+    // Mặc định
+    const defaultProducts = [
+        { id: 1, name: 'Dynamic Drag Limit Ipl', price: 100000, stock: 99999, sold: 0, image: 'https://i.imgur.com/placeholder.jpg', download: 'https://tykuio.store/dynamic.zip', video: 'https://youtube.com' },
+        { id: 2, name: 'Triggerbot Dynamic AI', price: 50000, stock: 99999, sold: 0, image: 'https://i.imgur.com/placeholder.jpg', download: 'https://tykuio.store/trigger.zip', video: 'https://youtube.com' },
+        { id: 3, name: 'Control Dynamic Andn', price: 150000, stock: 99999, sold: 0, image: 'https://i.imgur.com/placeholder.jpg', download: 'https://tykuio.store/control.zip', video: 'https://youtube.com' },
+        { id: 4, name: 'Drag Dynamic Reg Pc', price: 200000, stock: 99999, sold: 0, image: 'https://i.imgur.com/placeholder.jpg', download: 'https://tykuio.store/drag.zip', video: 'https://youtube.com' }
+    ];
+    localStorage.setItem('tykuio_products', JSON.stringify(defaultProducts));
+    return defaultProducts;
 }
 
-async function saveProducts(products) {
-// Cập nhật từng sản phẩm hoặc insert
-try {
-for (const p of products) {
-if (p.id) {
-await supabase.from('products').upsert(p);
-} else {
-await supabase.from('products').insert(p);
-}
-}
-} catch(e) {
-console.error('Lỗi save sản phẩm:', e);
-}
-}
-
-async function deleteProductFromDB(id) {
-try {
-await supabase.from('products').delete().eq('id', id);
-} catch(e) {
-console.error('Lỗi xóa sản phẩm:', e);
-}
+function saveProducts(data) {
+    localStorage.setItem('tykuio_products', JSON.stringify(data));
+    // Copy JSON ra clipboard để admin dán vào Pastebin
+    const json = JSON.stringify(data, null, 2);
+    navigator.clipboard.writeText(json).then(() => {
+        toast('✅ Đã copy JSON! Vào Pastebin dán và lưu để mọi người thấy.');
+        window.open('https://pastebin.com/US2iS29z', '_blank');
+    }).catch(() => {
+        toast('📋 Copy JSON và dán vào Pastebin:');
+        console.log(json);
+        alert('Copy JSON này và dán vào Pastebin:\n\n' + json);
+    });
 }
 
 // ============================================================
@@ -398,9 +410,6 @@ handleRegister();
 }
 }
 
-// ============================================================
-// LOGIN
-// ============================================================
 function handleLogin() {
 const username = document.getElementById('auth-username').value.trim();
 const password = document.getElementById('auth-password').value.trim();
@@ -416,7 +425,6 @@ toast('✅ Đăng nhập admin thành công!');
 return;
 }
 
-// Kiểm tra user trong localStorage (tạm thời)
 let users = loadUsers();
 const user = users.find(u => u.username === username && u.password === password);
 if (user) {
@@ -432,9 +440,6 @@ toast('❌ Sai tài khoản hoặc mật khẩu!');
 }
 }
 
-// ============================================================
-// REGISTER - GỬI VỀ TELEGRAM
-// ============================================================
 function handleRegister() {
 const username = document.getElementById('reg-username').value.trim();
 const password = document.getElementById('reg-password').value.trim();
@@ -462,20 +467,6 @@ body: JSON.stringify({ chat_id: TELE.chatId, text: msg, parse_mode: 'HTML' })
 toast('✅ Đăng ký thành công! Hãy đăng nhập.');
 toggleAuthMode();
 }
-
-// ============================================================
-// USER MANAGEMENT (tạm thời dùng localStorage, sẽ migrate lên Supabase sau)
-// ============================================================
-function loadUsers() {
-if (!localStorage.getItem('tykuio_users')) {
-localStorage.setItem('tykuio_users', JSON.stringify([
-{ username: 'admin', password: '15092007', balance: 0, purchases: [], topups: [] }
-]));
-}
-return JSON.parse(localStorage.getItem('tykuio_users'));
-}
-
-function saveUsers(users) { localStorage.setItem('tykuio_users', JSON.stringify(users)); }
 
 // ============================================================
 // UPDATE NAV
@@ -528,7 +519,7 @@ window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // ============================================================
-// RENDER SẢN PHẨM - TỪ SUPABASE
+// RENDER SẢN PHẨM
 // ============================================================
 async function renderProducts() {
 const products = await loadProducts();
@@ -588,10 +579,9 @@ videoLink: product.video || 'https://youtube.com'
 };
 session.purchases.unshift(purchase);
 
-// Lưu product vào Supabase
-await supabase.from('products').upsert(product);
+// Lưu product vào localStorage
+saveProducts(products);
 
-// Lưu user
 let users = loadUsers();
 const idx = users.findIndex(u => u.username === session.username);
 if (idx !== -1) { users[idx] = session; saveUsers(users); }
@@ -628,7 +618,7 @@ list.innerHTML = session.purchases.map(p => `
 }
 
 // ============================================================
-// RENDER ADMIN - TỪ SUPABASE
+// RENDER ADMIN
 // ============================================================
 async function renderAdmin() {
 const users = loadUsers();
@@ -652,7 +642,7 @@ ${u.username !== ADMIN_USERNAME ? `
 const products = await loadProducts();
 const prodContainer = document.getElementById('admin-products');
 if (!products || products.length === 0) {
-prodContainer.innerHTML = '<div class="text-gray-500 text-sm">Chưa có sản phẩm nào</div>';
+prodContainer.innerHTML = '<div class="text-gray-500 text-sm">Chưa có sản phẩm</div>';
 return;
 }
 prodContainer.innerHTML = products.map(p => `
@@ -677,14 +667,16 @@ p[field] = parseInt(value) || 0;
 } else {
 p[field] = value; 
 }
-await supabase.from('products').upsert(p);
+saveProducts(products); 
 renderProducts(); 
 }
 }
 
 async function deleteProduct(id) {
 if (!confirm('Xóa sản phẩm?')) return;
-await supabase.from('products').delete().eq('id', id);
+let products = await loadProducts();
+products = products.filter(p => p.id !== id);
+saveProducts(products);
 renderProducts();
 renderAdmin();
 toast('Đã xóa sản phẩm');
@@ -702,8 +694,10 @@ if (!name) { toast('❌ Vui lòng nhập tên sản phẩm'); return; }
 if (isNaN(price)) { toast('❌ Vui lòng nhập giá hợp lệ (0 = Miễn phí)'); return; }
 if (isNaN(stock) || stock < 0) { toast('❌ Vui lòng nhập số lượng hợp lệ'); return; }
 
-const newProduct = { 
-id: Date.now(), 
+const products = await loadProducts();
+const newId = products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1;
+products.push({ 
+id: newId, 
 name, 
 price, 
 stock, 
@@ -711,12 +705,12 @@ sold: 0,
 image, 
 download, 
 video 
-};
-await supabase.from('products').insert(newProduct);
+});
+saveProducts(products);
 ['new-name','new-price','new-stock','new-image','new-download','new-video'].forEach(id => document.getElementById(id).value = '');
 renderProducts();
 renderAdmin();
-toast('✅ Đã thêm sản phẩm thành công!');
+toast('✅ Đã thêm sản phẩm! Copy JSON dán vào Pastebin để mọi người thấy.');
 }
 
 // ============================================================
@@ -775,7 +769,6 @@ toast('✅ Đã tạo QR! Vui lòng chuyển khoản và chờ Admin duyệt.');
 // KHỞI TẠO
 // ============================================================
 (async function init() {
-// Tạo hoa anh đào
 const container = document.getElementById('cherry-container');
 for (let i = 0; i < 50; i++) {
 const petal = document.createElement('div');
@@ -789,7 +782,6 @@ petal.style.opacity = Math.random() * 0.5 + 0.2;
 container.appendChild(petal);
 }
 
-// Load dữ liệu
 const saved = localStorage.getItem('tykuio_session');
 if (saved) {
 try { session = JSON.parse(saved); } catch(e) {}
@@ -797,12 +789,8 @@ try { session = JSON.parse(saved); } catch(e) {}
 updateNav();
 await renderProducts();
 renderHistory();
-if (document.getElementById('admin-tab').classList.contains('active')) {
-await renderAdmin();
-}
 lucide.createIcons();
 
-// Ẩn loader
 setTimeout(() => {
 document.getElementById('loader').classList.add('hidden');
 document.body.classList.add('loaded');
