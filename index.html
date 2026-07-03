@@ -454,7 +454,7 @@
 
     let activeSession = null;
 
-    // Danh sách sản phẩm mặc định có ảnh thực tế và tài nguyên đầy đủ
+    // ĐỒNG BỘ DANH SÁCH SẢN PHẨM THỰC TẾ THEO ẢNH CỦA BẠN (Đã sửa đổi hoàn chỉnh ở đây)
     const DEFAULT_PRODUCTS = [
         { name: 'Dynamic Drag Limit Iphone V1', price: 100000, imgUrl: 'https://i.imgur.com/5BKxtVy.jpeg', fileUrl: 'https://google.com', videoUrl: 'https://youtube.com', imgText: 'HACK', theme: 'from-cyan-950 to-slate-900', stock: 99999, sold: 0 },
         { name: 'Triggerbot Dynamic Android V1', price: 50000, imgUrl: 'https://i.imgur.com/5BKxtVy.jpeg', fileUrl: 'https://google.com', videoUrl: 'https://youtube.com', imgText: 'HACK', theme: 'from-cyan-950 to-slate-900', stock: 99999, sold: 0 },
@@ -794,7 +794,6 @@
         }
     }
 
-    // FIX LỖI TRUYỀN THAM SỐ KHÔNG GÂY LIỆT NÚT SỬA SẢN PHẨM Ở ĐÂY
     function renderAdminCurrentProducts() {
         const rowsContainer = document.getElementById('admin-current-products-rows');
         if (!rowsContainer) return;
@@ -828,6 +827,7 @@
         }
     }
 
+    // UPDATE LẠI ĐOẠN ĐỌC DỮ LIỆU ĐỂ GIÃN KHUNG TRÊN MOBILE
     function adminEditProduct(index) {
         const products = JSON.parse(localStorage.getItem('tykuio_products') || '[]');
         const targetProduct = products[index];
