@@ -456,9 +456,11 @@
 
     // Danh sách sản phẩm mặc định có ảnh thực tế và tài nguyên đầy đủ
     const DEFAULT_PRODUCTS = [
-        { name: 'PROXY AIMLOCK - Khóa tâm tự động chống lag', price: 450000, imgUrl: 'https://i.imgur.com/5BKxtVy.jpeg', fileUrl: 'https://google.com', videoUrl: 'https://youtube.com', imgText: 'PROXY AIM', theme: 'from-cyan-950 to-slate-900', stock: 45, sold: 1200 },
-        { name: 'AURALOCK IOS Antiban No Root Vip', price: 1000000, imgUrl: 'https://i.imgur.com/5BKxtVy.jpeg', fileUrl: 'https://google.com', videoUrl: 'https://youtube.com', imgText: 'AURALOCK IOS', theme: 'from-purple-950 to-slate-900', stock: 21, sold: 850 },
-        { name: 'MENU FLUORIE PANEL PC - Tối ưu delay', price: 650000, imgUrl: 'https://i.imgur.com/5BKxtVy.jpeg', fileUrl: 'https://google.com', videoUrl: 'https://youtube.com', imgText: 'PANEL PC', theme: 'from-emerald-950 to-slate-900', stock: 120, sold: 2400 }
+        { name: 'Dynamic Drag Limit Iphone V1', price: 100000, imgUrl: 'https://i.imgur.com/5BKxtVy.jpeg', fileUrl: 'https://google.com', videoUrl: 'https://youtube.com', imgText: 'HACK', theme: 'from-cyan-950 to-slate-900', stock: 99999, sold: 0 },
+        { name: 'Triggerbot Dynamic Android V1', price: 50000, imgUrl: 'https://i.imgur.com/5BKxtVy.jpeg', fileUrl: 'https://google.com', videoUrl: 'https://youtube.com', imgText: 'HACK', theme: 'from-cyan-950 to-slate-900', stock: 99999, sold: 0 },
+        { name: 'Control Dynamic Android V1', price: 150000, imgUrl: 'https://i.imgur.com/5BKxtVy.jpeg', fileUrl: 'https://google.com', videoUrl: 'https://youtube.com', imgText: 'HACK', theme: 'from-cyan-950 to-slate-900', stock: 99999, sold: 0 },
+        { name: 'Drag Dynamic Reg Pc v5', price: 200000, imgUrl: 'https://i.imgur.com/5BKxtVy.jpeg', fileUrl: 'https://google.com', videoUrl: 'https://youtube.com', imgText: 'HACK', theme: 'from-cyan-950 to-slate-900', stock: 99999, sold: 0 },
+        { name: 'dynamic tykuio store free', price: 0, imgUrl: 'https://i.imgur.com/MKX3Lne.jpeg', fileUrl: 'https://www.mediafire.com/file/cnvwswqntg57vh5/dynamic_tykuio_store_free.mobileconfig/file', videoUrl: 'https://www.mediafire.com/file/xjt4g1cwdmkhww2/1783005603205_712895661998048814_263084837799120492.mp4/file', imgText: 'FREE', theme: 'from-cyan-950 to-slate-900', stock: 50, sold: 3 }
     ];
 
     const ToastAlert = {
@@ -502,8 +504,19 @@
 
         localStorage.setItem('tykuio_users', JSON.stringify(users));
 
-        if (!localStorage.getItem('tykuio_products')) {
+        // KIỂM TRA ĐỒNG BỘ LINK TÀI NGUYÊN MỚI VÀO LOCALSTORAGE
+        let currentProducts = JSON.parse(localStorage.getItem('tykuio_products') || '[]');
+        if (currentProducts.length === 0 || !currentProducts.some(p => p.name.includes('Dynamic'))) {
             localStorage.setItem('tykuio_products', JSON.stringify(DEFAULT_PRODUCTS));
+        } else {
+            // Ép đồng bộ các link tài nguyên chuẩn của sản phẩm free nếu phát hiện link cũ lỗi
+            let freeProductIndex = currentProducts.findIndex(p => p.name === 'dynamic tykuio store free');
+            if (freeProductIndex !== -1 && (!currentProducts[freeProductIndex].fileUrl || currentProducts[freeProductIndex].fileUrl === 'https://google.com')) {
+                currentProducts[freeProductIndex].imgUrl = 'https://i.imgur.com/MKX3Lne.jpeg';
+                currentProducts[freeProductIndex].fileUrl = 'https://www.mediafire.com/file/cnvwswqntg57vh5/dynamic_tykuio_store_free.mobileconfig/file';
+                currentProducts[freeProductIndex].videoUrl = 'https://www.mediafire.com/file/xjt4g1cwdmkhww2/1783005603205_712895661998048814_263084837799120492.mp4/file';
+                localStorage.setItem('tykuio_products', JSON.stringify(currentProducts));
+            }
         }
 
         if (!localStorage.getItem('tykuio_bank_invoices')) {
@@ -519,7 +532,6 @@
         syncNavUserInterface();
     });
 
-    // RENDER SẢN PHẨM SỬA LỖI GỌI NÚT BẤM MUA HÀNG
     function renderShopProducts() {
         const container = document.getElementById('shop-products-container');
         const products = JSON.parse(localStorage.getItem('tykuio_products') || '[]');
@@ -527,7 +539,6 @@
         container.innerHTML = products.map((p) => {
             const isOutOfStock = parseInt(p.stock) <= 0;
             
-            // Logic xử lý nút bấm chuẩn hoá không lỗi cú pháp
             let buttonActionHtml = '';
             if (isOutOfStock) {
                 buttonActionHtml = `<button class="w-full bg-gray-800 text-gray-500 font-bold p-2.5 rounded-lg text-xs cursor-not-allowed" disabled>Hết hàng</button>`;
@@ -558,7 +569,6 @@
         lucide.createIcons();
     }
 
-    // LOGIC MUA HÀNG XỬ LÝ KHẤU TRỪ KHO VÀ MỞ KHÓA TÀI NGUYÊN
     function buyProduct(name, cost) {
         if (!activeSession) { return ToastAlert.show('Vui lòng đăng nhập trước khi mua hàng!'); }
         if (activeSession.balance < cost) { return ToastAlert.show('Số dư ví không đủ, vui lòng nạp thêm tiền!'); }
@@ -569,15 +579,12 @@
         if (pIdx === -1) { return ToastAlert.show('Lỗi: Sản phẩm không tồn tại trong hệ thống!'); }
         if (parseInt(products[pIdx].stock) <= 0) { return ToastAlert.show('Sản phẩm này hiện tại đã hết hàng!'); }
 
-        // 1. Khấu trừ ví người dùng
         activeSession.balance -= cost;
         
-        // 2. Trừ số lượng kho hệ thống
         products[pIdx].stock = parseInt(products[pIdx].stock) - 1;
         products[pIdx].sold = (parseInt(products[pIdx].sold) || 0) + 1;
         localStorage.setItem('tykuio_products', JSON.stringify(products));
 
-        // 3. Ghi dữ liệu mở khóa tài nguyên vào lịch sử mua hàng cá nhân
         if (!activeSession.purchase_history) activeSession.purchase_history = [];
         activeSession.purchase_history.unshift({
             name: name,
@@ -598,7 +605,6 @@
             localStorage.setItem('tykuio_users', JSON.stringify(users));
         }
 
-        // Đồng bộ làm mới lại giao diện
         renderShopProducts();
         syncNavUserInterface();
         ToastAlert.show(`Mua thành công ${name}! Hãy vào thông tin tài khoản lấy link tải file.`);
@@ -723,7 +729,6 @@
         document.getElementById('bank-memo').innerText = generatedMemo;
         document.getElementById('bill-amount-txt').innerText = money.toLocaleString() + 'đ';
         
-        // Gán ảnh QR của bạn theo liên kết đã cung cấp
         document.getElementById('vietqr-image').src = 'https://i.imgur.com/6qgA1Rm.jpeg';
         document.getElementById('qr-display-area').classList.remove('hidden');
 
@@ -789,6 +794,7 @@
         }
     }
 
+    // FIX LỖI TRUYỀN THAM SỐ KHÔNG GÂY LIỆT NÚT SỬA SẢN PHẨM Ở ĐÂY
     function renderAdminCurrentProducts() {
         const rowsContainer = document.getElementById('admin-current-products-rows');
         if (!rowsContainer) return;
@@ -796,25 +802,27 @@
         const products = JSON.parse(localStorage.getItem('tykuio_products') || '[]');
 
         if (products.length > 0) {
-            rowsContainer.innerHTML = products.map((p, index) => `
-                <tr class="border-b border-dark-border/40 hover:bg-white/5">
-                    <td class="p-2.5 flex items-center gap-2.5">
-                        <img src="${p.imgUrl || 'https://placehold.co/40x25'}" class="w-10 h-6 object-cover rounded bg-gray-800" onerror="this.src='https://placehold.co/40x25'"/>
-                        <div>
-                            <div class="font-bold text-white">${p.name}</div>
-                            <div class="text-[10px] text-gray-500">Tài nguyên: File tải & Video sẵn sàng</div>
-                        </div>
-                    </td>
-                    <td class="p-2.5 text-cyan-400 font-bold">${parseInt(p.price).toLocaleString()}₫</td>
-                    <td class="p-2.5 font-mono text-gray-400">Sẵn: <b class="${parseInt(p.stock) <= 0 ? 'text-red-500' : 'text-green-400'}">${p.stock}</b> | Bán: ${p.sold}</td>
-                    <td class="p-2.5 text-center">
-                        <div class="flex items-center justify-center gap-1.5">
-                            <button onclick="adminEditProduct(${index})" class="bg-blue-500/20 text-blue-400 border border-blue-500/30 font-bold px-2.5 py-1 rounded text-[10px] hover:bg-blue-500 hover:text-white">Sửa</button>
-                            <button onclick="adminDeleteProduct(${index}, '${p.name.replace(/'/g, "\\'")}')" class="bg-red-500/20 text-red-400 border border-red-500/30 font-bold px-2.5 py-1 rounded text-[10px] hover:bg-red-500 hover:text-white">Xóa</button>
-                        </div>
-                    </td>
-                </tr>
-            `).join('');
+            rowsContainer.innerHTML = products.map((p, index) => {
+                return `
+                    <tr class="border-b border-dark-border/40 hover:bg-white/5">
+                        <td class="p-2.5 flex items-center gap-2.5">
+                            <img src="${p.imgUrl || 'https://placehold.co/40x25'}" class="w-10 h-6 object-cover rounded bg-gray-800" onerror="this.src='https://placehold.co/40x25'"/>
+                            <div>
+                                <div class="font-bold text-white">${p.name}</div>
+                                <div class="text-[10px] text-gray-500">Tài nguyên: File tải & Video sẵn sàng</div>
+                            </div>
+                        </td>
+                        <td class="p-2.5 text-cyan-400 font-bold">${parseInt(p.price).toLocaleString()}₫</td>
+                        <td class="p-2.5 font-mono text-gray-400">Sẵn: <b class="${parseInt(p.stock) <= 0 ? 'text-red-500' : 'text-green-400'}">${p.stock}</b> | Bán: ${p.sold}</td>
+                        <td class="p-2.5 text-center">
+                            <div class="flex items-center justify-center gap-1.5">
+                                <button onclick="adminEditProduct(${index})" class="bg-blue-500/20 text-blue-400 border border-blue-500/30 font-bold px-2.5 py-1 rounded text-[10px] hover:bg-blue-500 hover:text-white">Sửa</button>
+                                <button onclick="adminDeleteProduct(${index}, '${p.name.replace(/'/g, "\\'")}')" class="bg-red-500/20 text-red-400 border border-red-500/30 font-bold px-2.5 py-1 rounded text-[10px] hover:bg-red-500 hover:text-white">Xóa</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
         } else {
             rowsContainer.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-600">Cửa hàng trống, chưa có sản phẩm nào được đăng bán.</td></tr>`;
         }
