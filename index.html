@@ -259,7 +259,7 @@
 
     <!-- ================= 4. THÔNG TIN CHI TIẾT TÀI KHOẢN (PROFILE TAB) ================= -->
     <div id="profile-tab" class="tab-panel space-y-6">
-        <div class="max-w-3xl mx-auto bg-dark-card border border-dark-border rounded-xl p-6 space-y-6 shadow-2xl">
+        <div class="max-w-5xl mx-auto bg-dark-card border border-dark-border rounded-xl p-6 space-y-6 shadow-2xl">
             <div class="flex items-center justify-between border-b border-dark-border pb-4">
                 <h2 class="text-white font-bold text-base flex items-center gap-2">📊 THÔNG TIN CHI TIẾT TÀI KHOẢN</h2>
                 <button onclick="logoutSession()" class="text-xs bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-1.5 rounded-lg hover:bg-red-500 hover:text-white transition-all font-semibold">Đăng xuất tài khoản</button>
@@ -294,7 +294,7 @@
                 </div>
             </div>
 
-            <!-- Lịch sử mua hàng -->
+            <!-- Lịch sử mua hàng kèm tài nguyên dữ liệu -->
             <div class="space-y-3">
                 <h3 class="text-white font-bold text-xs uppercase tracking-wider flex items-center gap-1.5"><i class="w-4 h-4 text-neon-purple" data-lucide="package"></i> Lịch sử mua phần mềm</h3>
                 <div class="overflow-x-auto">
@@ -305,6 +305,7 @@
                                 <th class="p-2.5 border border-dark-border">Giá mua</th>
                                 <th class="p-2.5 border border-dark-border">Thời gian mua</th>
                                 <th class="p-2.5 border border-dark-border">Key nhận diện</th>
+                                <th class="p-2.5 border border-dark-border text-center">Tài nguyên</th>
                             </tr>
                         </thead>
                         <tbody id="purchase-history-rows" class="text-gray-300"></tbody>
@@ -342,14 +343,13 @@
                 </div>
             </div>
 
-            <!-- BẢNG 2: THÊM / SỬA SẢN PHẨM (NÂNG CẤP ĐA NĂNG) -->
+            <!-- BẢNG 2: THÊM / SỬA SẢN PHẨM -->
             <div id="admin-form-container" class="bg-dark-card border border-dark-border rounded-xl p-6 space-y-4 shadow-2xl">
                 <div class="border-b border-dark-border pb-3">
                     <h2 id="admin-form-title" class="text-amber-400 font-bold text-base flex items-center gap-2">🛠️ QUẢN LÝ THÊM SẢN PHẨM MỚI</h2>
-                    <p id="admin-form-desc" class="text-gray-500 text-xs mt-0.5">Đăng bán sản phẩm mới trực tiếp lên hệ thống.</p>
+                    <p id="admin-form-desc" class="text-gray-500 text-xs mt-0.5">Cung cấp đầy đủ thông tin: Link Ảnh, File Download và Link Video.</p>
                 </div>
 
-                <!-- Input ẩn để lưu vị trí sản phẩm đang sửa -->
                 <input type="hidden" id="adm-p-edit-index" value="-1" />
 
                 <form id="admin-add-product-form" onsubmit="adminSaveProduct(event)" class="space-y-4 text-xs">
@@ -364,31 +364,39 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- THÊM MỚI CÁC TRƯỜNG LINK NHẬP LIỆU -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
-                            <label class="block text-gray-400 mb-1">Hình nền viết tắt (Ví dụ: PROXY AIM, PANEL PC...)</label>
-                            <input type="text" id="adm-p-imgtext" required placeholder="Chữ hiển thị thay ảnh" class="w-full bg-dark-surface border border-dark-border rounded-lg p-2.5 text-white focus:outline-none focus:border-amber-500" />
+                            <label class="block text-gray-400 mb-1">Đường dẫn link ảnh hiển thị (URL)</label>
+                            <input type="url" id="adm-p-imgurl" placeholder="https://i.imgur.com/... ảnh sản phẩm" class="w-full bg-dark-surface border border-dark-border rounded-lg p-2.5 text-white focus:outline-none focus:border-amber-500" />
                         </div>
                         <div>
-                            <label class="block text-gray-400 mb-1">Theme màu sắc thẻ</label>
-                            <select id="adm-p-theme" class="w-full bg-dark-surface border border-dark-border rounded-lg p-2.5 text-white focus:outline-none">
-                                <option value="from-cyan-950 to-slate-900 text-cyan-400">Cyan Neon Theme</option>
-                                <option value="from-purple-950 to-slate-900 text-purple-400">Purple Neon Theme</option>
-                                <option value="from-emerald-950 to-slate-900 text-emerald-400">Emerald Green Theme</option>
-                                <option value="from-amber-950 to-slate-900 text-amber-400">Amber Gold Theme</option>
-                            </select>
+                            <label class="block text-gray-400 mb-1">Đường dẫn link tải file hack / key (URL)</label>
+                            <input type="url" id="adm-p-download" required placeholder="https://drive.google.com/..." class="w-full bg-dark-surface border border-dark-border rounded-lg p-2.5 text-white focus:outline-none focus:border-amber-500" />
+                        </div>
+                        <div>
+                            <label class="block text-gray-400 mb-1">Đường dẫn link video hướng dẫn (URL)</label>
+                            <input type="url" id="adm-p-video" required placeholder="https://youtube.com/watch?v=..." class="w-full bg-dark-surface border border-dark-border rounded-lg p-2.5 text-white focus:outline-none focus:border-amber-500" />
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
-                            <label class="block text-gray-400 mb-1">Số lượng sẵn có</label>
-                            <input type="text" id="adm-p-stock" value="99" class="w-full bg-dark-surface border border-dark-border rounded-lg p-2.5 text-white focus:outline-none font-mono" />
+                            <label class="block text-gray-400 mb-1">Chữ viết tắt dự phòng (Nếu không có link ảnh)</label>
+                            <input type="text" id="adm-p-imgtext" required placeholder="Ví dụ: PROXY AIM" class="w-full bg-dark-surface border border-dark-border rounded-lg p-2.5 text-white focus:outline-none focus:border-amber-500" />
+                        </div>
+                        <div>
+                            <label class="block text-gray-400 mb-1">Số lượng sẵn có (Số lượng kho)</label>
+                            <input type="number" id="adm-p-stock" value="10" required class="w-full bg-dark-surface border border-dark-border rounded-lg p-2.5 text-white focus:outline-none font-mono" />
                         </div>
                         <div>
                             <label class="block text-gray-400 mb-1">Số lượng đã bán</label>
-                            <input type="text" id="adm-p-sold" value="0" class="w-full bg-dark-surface border border-dark-border rounded-lg p-2.5 text-white focus:outline-none font-mono" />
+                            <input type="number" id="adm-p-sold" value="0" required class="w-full bg-dark-surface border border-dark-border rounded-lg p-2.5 text-white focus:outline-none font-mono" />
                         </div>
+                    </div>
+
+                    <div class="hidden">
+                        <select id="adm-p-theme"><option value="from-cyan-950 to-slate-900 text-cyan-400" selected></option></select>
                     </div>
 
                     <div class="flex gap-3">
@@ -406,13 +414,13 @@
             <div class="bg-dark-card border border-dark-border rounded-xl p-6 space-y-4 shadow-2xl">
                 <div class="border-b border-dark-border pb-3">
                     <h2 class="text-neon-purple font-bold text-base flex items-center gap-2">📦 DANH SÁCH SẢN PHẨM TRÊN CỬA HÀNG</h2>
-                    <p class="text-gray-500 text-xs mt-0.5">Quản lý kho phần mềm, thay đổi thông tin hoặc xóa bỏ sản phẩm.</p>
+                    <p class="text-gray-500 text-xs mt-0.5">Quản lý kho tài nguyên phần mềm, thay đổi thông số hoặc xóa bỏ sản phẩm.</p>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs border border-dark-border font-mono">
                         <thead class="bg-dark-surface text-gray-400">
                             <tr>
-                                <th class="p-2.5 border border-dark-border">Tên sản phẩm</th>
+                                <th class="p-2.5 border border-dark-border">Hình ảnh / Tên sản phẩm</th>
                                 <th class="p-2.5 border border-dark-border">Giá bán</th>
                                 <th class="p-2.5 border border-dark-border">Kho / Đã bán</th>
                                 <th class="p-2.5 border border-dark-border text-center">Hành động</th>
@@ -449,10 +457,11 @@
 
     let activeSession = null;
 
+    // Bộ dữ liệu gốc nâng cấp cấu trúc liên kết tệp tin và hình ảnh thực tế
     const DEFAULT_PRODUCTS = [
-        { name: 'PROXY AIMLOCK - Khóa tâm tự động chống lag', price: 450000, imgText: 'PROXY AIM', theme: 'from-cyan-950 to-slate-900', stock: 45, sold: '1.2K' },
-        { name: 'AURALOCK IOS Antiban No Root Vip', price: 1000000, imgText: 'AURALOCK IOS', theme: 'from-purple-950 to-slate-900', stock: 21, sold: 850 },
-        { name: 'MENU FLUORIE PANEL PC - Tối ưu delay', price: 650000, imgText: 'PANEL PC', theme: 'from-emerald-950 to-slate-900', stock: 120, sold: '2.4K' }
+        { name: 'PROXY AIMLOCK - Khóa tâm tự động chống lag', price: 450000, imgText: 'PROXY AIM', imgUrl: 'https://i.imgur.com/5BKxtVy.jpeg', theme: 'from-cyan-950 to-slate-900', stock: 45, sold: 1200, fileUrl: 'https://google.com', videoUrl: 'https://youtube.com' },
+        { name: 'AURALOCK IOS Antiban No Root Vip', price: 1000000, imgText: 'AURALOCK IOS', imgUrl: '', theme: 'from-purple-950 to-slate-900', stock: 21, sold: 850, fileUrl: 'https://google.com', videoUrl: 'https://youtube.com' },
+        { name: 'MENU FLUORIE PANEL PC - Tối ưu delay', price: 650000, imgText: 'PANEL PC', imgUrl: '', theme: 'from-emerald-950 to-slate-900', stock: 120, sold: 2400, fileUrl: 'https://google.com', videoUrl: 'https://youtube.com' }
     ];
 
     const ToastAlert = {
@@ -513,28 +522,43 @@
         syncNavUserInterface();
     });
 
+    // HIỂN THỊ SẢN PHẨM TRANG CHỦ (HỖ TRỢ LINK ẢNH / HOẶC ẢNH MẶC ĐỊNH NEON)
     function renderShopProducts() {
         const container = document.getElementById('shop-products-container');
         const products = JSON.parse(localStorage.getItem('tykuio_products') || '[]');
         
-        container.innerHTML = products.map(p => `
-            <div class="mk-product-card">
-                <div class="mk-product-img">
-                    <div class="w-full h-full bg-gradient-to-br ${p.theme} flex items-center justify-center font-bold text-gray-500 text-sm tracking-wider select-none">${p.imgText}</div>
-                    <div class="mk-badge"><span class="mk-dot"></span>ACTIVE</div>
-                </div>
-                <div class="mk-product-info">
-                    <h3 class="mk-product-name">${p.name}</h3>
-                    <div class="text-[11px] text-gray-400 mb-2 flex justify-between font-mono">
-                        <span>Sẵn có: <b>${p.stock}</b></span> <span>Đã bán: <b>${p.sold}</b></span>
+        container.innerHTML = products.map(p => {
+            const isOutOfStock = parseInt(p.stock) <= 0;
+            
+            // Xử lý hiển thị ảnh: Nếu có link ảnh thì dùng thẻ img, không thì đổ màu nền Gradient
+            const mediaDisplay = p.imgUrl ? 
+                `<img src="${p.imgUrl}" class="w-full h-full object-cover select-none" onerror="this.src='';this.parentElement.innerHTML='<div class=\'w-full h-full bg-gradient-to-br ${p.theme} flex items-center justify-center font-bold text-gray-500 text-sm\'>${p.imgText}</div>'"/>` : 
+                `<div class="w-full h-full bg-gradient-to-br ${p.theme} flex items-center justify-center font-bold text-gray-500 text-sm tracking-wider select-none">${p.imgText}</div>`;
+
+            return `
+                <div class="mk-product-card">
+                    <div class="mk-product-img">
+                        ${mediaDisplay}
+                        <div class="mk-badge">
+                            <span class="mk-dot" style="${isOutOfStock ? 'background:#ef4444;box-shadow:0 0 6px #ef4444;' : ''}"></span>
+                            ${isOutOfStock ? 'HẾT HÀNG' : 'ACTIVE'}
+                        </div>
                     </div>
-                    <div class="mk-product-price">${parseInt(p.price).toLocaleString()}₫</div>
-                    <button class="mk-btn-order" onclick="buyProduct('${p.name}', ${p.price})">
-                        <i class="w-3.5 h-3.5" data-lucide="shopping-cart"></i> Mua ngay
-                    </button>
+                    <div class="mk-product-info">
+                        <h3 class="mk-product-name">${p.name}</h3>
+                        <div class="text-[11px] text-gray-400 mb-2 flex justify-between font-mono">
+                            <span>Sẵn có: <b class="${isOutOfStock ? 'text-red-500' : 'text-green-400'}">${p.stock}</b></span> 
+                            <span>Đã bán: <b>${p.sold}</b></span>
+                        </div>
+                        <div class="mk-product-price">${parseInt(p.price).toLocaleString()}₫</div>
+                        ${isOutOfStock ? 
+                            `<button class="w-full bg-gray-800 text-gray-500 cursor-not-allowed padding p-2.5 rounded-lg text-xs font-bold" disabled>Hết hàng</button>` :
+                            `<button class="mk-btn-order" onclick="buyProduct('${p.name}', ${p.price})"><i class="w-3.5 h-3.5" data-lucide="shopping-cart"></i> Mua ngay</button>`
+                        }
+                    </div>
                 </div>
-            </div>
-        `).join('');
+            `;
+        }).join('');
         lucide.createIcons();
     }
 
@@ -545,7 +569,7 @@
         if (tabId === 'admin-tab') {
             renderAdminPendingBank();
             renderAdminCurrentProducts();
-            adminCancelEdit(); // Reset form về trạng thái Thêm mới khi đổi tab
+            adminCancelEdit();
         }
     }
 
@@ -649,7 +673,7 @@
     function generateBankInvoice() {
         if (!activeSession) { return ToastAlert.show('Lỗi: Bạn cần đăng nhập trước!'); }
         
-        const money = parseInt(document.getElementById('bank-amount') ? document.getElementById('bank-amount').value : document.getElementById('bank-select-amount').value);
+        const money = parseInt(document.getElementById('bank-select-amount').value);
         const generatedMemo = `TykuioStore_${activeSession.username}`;
         const invoiceId = 'BANK-' + Math.floor(100000 + Math.random() * 900000);
         const timeString = new Date().toLocaleString('vi-VN');
@@ -692,16 +716,55 @@
             }
         }
 
-        const teleMessage = `⚠️ <b>[YÊU CẦU NẠP TIỀN BANK]</b>\n` +
-                            `🆔 Mã đơn: <code>${invoiceId}</code>\n` +
-                            `👤 Tài khoản: <b>${activeSession.username}</b>\n` +
-                            `💵 Số tiền chọn nạp: <b>${money.toLocaleString()}đ</b>\n` +
-                            `📌 Nội dung CK chuẩn: <code>${generatedMemo}</code>\n` +
-                            `⏰ Thời gian gửi: ${timeString}\n` +
-                            `👉 <i>Vui lòng vào tài khoản haodz kiểm tra và duyệt trên Panel!</i>`;
+        const teleMessage = `⚠️ <b>[YÊU CẦU NẠP TIỀN BANK]</b>\n🆔 Mã đơn: <code>${invoiceId}</code>\n👤 Tài khoản: <b>${activeSession.username}</b>\n💵 Số tiền chọn nạp: <b>${money.toLocaleString()}đ</b>\n📌 Nội dung CK chuẩn: <code>${generatedMemo}</code>\n⏰ Thời gian gửi: ${timeString}`;
         sendPayloadToTelegramBot(teleMessage);
 
         ToastAlert.show('Khởi tạo mã QR thành công! Chờ bạn chuyển tiền rồi Admin duyệt.');
+    }
+
+    // LOGIC KHẤU TRỪ SỐ LƯỢNG KHO KHI KHÁCH HÀNG MUA HÀNG
+    function buyProduct(name, cost) {
+        if (!activeSession) { return ToastAlert.show('Vui lòng đăng nhập trước khi mua hàng!'); }
+        if (activeSession.balance < cost) { return ToastAlert.show('Số dư ví không đủ, vui lòng nạp tiền!'); }
+
+        let products = JSON.parse(localStorage.getItem('tykuio_products') || '[]');
+        const pIdx = products.findIndex(p => p.name === name);
+
+        if (pIdx === -1) { return ToastAlert.show('Lỗi: Sản phẩm không tồn tại trong hệ thống!'); }
+        if (parseInt(products[pIdx].stock) <= 0) { return ToastAlert.show('Lỗi: Sản phẩm này đã hết hàng!'); }
+
+        // 1. Tiến hành khấu trừ số lượng kho và tăng số lượng đã bán
+        products[pIdx].stock = parseInt(products[pIdx].stock) - 1;
+        products[pIdx].sold = parseInt(products[pIdx].sold) + 1;
+        localStorage.setItem('tykuio_products', JSON.stringify(products));
+
+        // 2. Trừ tiền tài khoản người dùng
+        activeSession.balance -= cost;
+        
+        if (!activeSession.purchase_history) activeSession.purchase_history = [];
+        activeSession.purchase_history.unshift({
+            name: name,
+            price: cost,
+            time: new Date().toLocaleString('vi-VN'),
+            key: 'TYKUIO-' + Math.random().toString(36).substring(2, 10).toUpperCase(),
+            fileUrl: products[pIdx].fileUrl || '#',
+            videoUrl: products[pIdx].videoUrl || '#'
+        });
+
+        localStorage.setItem('tykuio_current_session', JSON.stringify(activeSession));
+        
+        let users = JSON.parse(localStorage.getItem('tykuio_users') || '[]');
+        const idx = users.findIndex(u => u.username === activeSession.username);
+        if (idx !== -1) {
+            users[idx].balance = activeSession.balance;
+            users[idx].purchase_history = activeSession.purchase_history;
+            localStorage.setItem('tykuio_users', JSON.stringify(users));
+        }
+
+        // Làm mới giao diện
+        renderShopProducts();
+        syncNavUserInterface();
+        ToastAlert.show(`Mua thành công ${name}! Tài nguyên đã mở khóa trong thông tin tài khoản.`);
     }
 
     function renderAdminPendingBank() {
@@ -729,6 +792,7 @@
         }
     }
 
+    // HIỂN THỊ DANH SÁCH SẢN PHẨM TRONG ADMIN PANEL
     function renderAdminCurrentProducts() {
         const rowsContainer = document.getElementById('admin-current-products-rows');
         if (!rowsContainer) return;
@@ -738,19 +802,20 @@
         if (products.length > 0) {
             rowsContainer.innerHTML = products.map((p, index) => `
                 <tr class="border-b border-dark-border/40 hover:bg-white/5">
-                    <td class="p-2.5">
-                        <div class="font-bold text-white">${p.name}</div>
-                        <div class="text-[10px] text-gray-500">Tag đại diện: ${p.imgText}</div>
+                    <td class="p-2.5 flex items-center gap-2.5">
+                        <img src="${p.imgUrl || 'https://via.placeholder.com/40x25'}" class="w-10 h-6 object-cover rounded bg-gray-800" onerror="this.src='https://via.placeholder.com/40x25'"/>
+                        <div>
+                            <div class="font-bold text-white">${p.name}</div>
+                            <div class="text-[10px] text-gray-500">File: ${p.fileUrl ? 'Có' : 'Không'} | Video: ${p.videoUrl ? 'Có' : 'Không'}</div>
+                        </div>
                     </td>
                     <td class="p-2.5 text-cyan-400 font-bold">${parseInt(p.price).toLocaleString()}₫</td>
-                    <td class="p-2.5 font-mono text-gray-400">Sẵn: ${p.stock} | Bán: ${p.sold}</td>
-                    <td class="p-2.5 text-center flex items-center justify-center gap-2">
-                        <button onclick="adminEditProduct(${index})" class="bg-blue-500/20 text-blue-400 border border-blue-500/30 font-bold px-3 py-1 rounded text-[10px] hover:bg-blue-500 hover:text-white transition-colors">
-                            Sửa
-                        </button>
-                        <button onclick="adminDeleteProduct(${index}, '${p.name}')" class="bg-red-500/20 text-red-400 border border-red-500/30 font-bold px-3 py-1 rounded text-[10px] hover:bg-red-500 hover:text-white transition-colors">
-                            Xóa
-                        </button>
+                    <td class="p-2.5 font-mono text-gray-400">Sẵn: <b class="${parseInt(p.stock) <= 0 ? 'text-red-500' : 'text-green-400'}">${p.stock}</b> | Bán: ${p.sold}</td>
+                    <td class="p-2.5 text-center">
+                        <div class="flex items-center justify-center gap-1.5">
+                            <button onclick="adminEditProduct(${index})" class="bg-blue-500/20 text-blue-400 border border-blue-500/30 font-bold px-2.5 py-1 rounded text-[10px] hover:bg-blue-500 hover:text-white">Sửa</button>
+                            <button onclick="adminDeleteProduct(${index}, '${p.name}')" class="bg-red-500/20 text-red-400 border border-red-500/30 font-bold px-2.5 py-1 rounded text-[10px] hover:bg-red-500 hover:text-white">Xóa</button>
+                        </div>
                     </td>
                 </tr>
             `).join('');
@@ -759,79 +824,66 @@
         }
     }
 
-    // ĐIỀN THÔNG TIN SẢN PHẨM VÀO FORM ĐỂ SỬA
     function adminEditProduct(index) {
-        if (!activeSession || activeSession.username !== 'haodz') {
-            return ToastAlert.show('Lỗi: Bạn không có quyền hạn thực hiện chức năng này!');
-        }
-
         const products = JSON.parse(localStorage.getItem('tykuio_products') || '[]');
         const targetProduct = products[index];
-
         if (!targetProduct) return;
 
-        // Điền dữ liệu vào form
         document.getElementById('adm-p-edit-index').value = index;
         document.getElementById('adm-p-name').value = targetProduct.name;
         document.getElementById('adm-p-price').value = targetProduct.price;
-        document.getElementById('adm-p-imgtext').value = targetProduct.imgText;
-        document.getElementById('adm-p-theme').value = targetProduct.theme;
+        document.getElementById('adm-p-imgurl').value = targetProduct.imgUrl || '';
+        document.getElementById('adm-p-download').value = targetProduct.fileUrl || '';
+        document.getElementById('adm-p-video').value = targetProduct.videoUrl || '';
+        document.getElementById('adm-p-imgtext').value = targetProduct.imgText || '';
         document.getElementById('adm-p-stock').value = targetProduct.stock;
         document.getElementById('adm-p-sold').value = targetProduct.sold;
 
-        // Thay đổi UI tiêu đề và nút bấm form
         document.getElementById('admin-form-title').innerText = "📝 CHỈNH SỬA THÔNG TIN SẢN PHẨM";
-        document.getElementById('admin-form-desc').innerText = "Thay đổi thông số phần mềm và lưu lại vào hệ thống Store.";
+        document.getElementById('admin-form-desc').innerText = "Thay đổi thông số, liên kết tài nguyên phần mềm.";
         document.getElementById('admin-form-submit-btn').innerText = "Cập nhật thông tin sản phẩm";
         document.getElementById('admin-form-cancel-btn').classList.remove('hidden');
 
-        // Cuộn màn hình mượt mà lên vị trí form để sửa ngay lập tức
         document.getElementById('admin-form-container').scrollIntoView({ behavior: 'smooth' });
     }
 
-    // HỦY BỎ CHẾ ĐỘ SỬA - QUAY VỀ THÊM MỚI
     function adminCancelEdit() {
         document.getElementById('adm-p-edit-index').value = "-1";
         document.getElementById('admin-add-product-form').reset();
-
         document.getElementById('admin-form-title').innerText = "🛠️ QUẢN LÝ THÊM SẢN PHẨM MỚI";
         document.getElementById('admin-form-desc').innerText = "Đăng bán sản phẩm mới trực tiếp lên hệ thống.";
         document.getElementById('admin-form-submit-btn').innerText = "Đăng bán sản phẩm lên trang chủ";
         document.getElementById('admin-form-cancel-btn').classList.add('hidden');
     }
 
-    // LƯU HỢP NHẤT: XỬ LÝ CẢ THÊM MỚI HOẶC CẬP NHẬT SỬA ĐỔI
     function adminSaveProduct(e) {
         e.preventDefault();
-        if (!activeSession || activeSession.username !== 'haodz') {
-            return ToastAlert.show('Lỗi: Bạn không có quyền hạn thực hiện chức năng này!');
-        }
-
         const index = parseInt(document.getElementById('adm-p-edit-index').value);
         const name = document.getElementById('adm-p-name').value.trim();
         const price = parseInt(document.getElementById('adm-p-price').value);
+        const imgUrl = document.getElementById('adm-p-imgurl').value.trim();
+        const fileUrl = document.getElementById('adm-p-download').value.trim();
+        const videoUrl = document.getElementById('adm-p-video').value.trim();
         const imgText = document.getElementById('adm-p-imgtext').value.trim();
+        const stock = parseInt(document.getElementById('adm-p-stock').value) || 0;
+        const sold = parseInt(document.getElementById('adm-p-sold').value) || 0;
         const theme = document.getElementById('adm-p-theme').value;
-        const stock = document.getElementById('adm-p-stock').value;
-        const sold = document.getElementById('adm-p-sold').value;
 
         let currentProducts = JSON.parse(localStorage.getItem('tykuio_products') || '[]');
 
+        const productData = { name, price, imgText, imgUrl, theme, stock, sold, fileUrl, videoUrl };
+
         if (index === -1) {
-            // Chế độ 1: Thêm sản phẩm mới
-            currentProducts.push({ name, price, imgText, theme, stock, sold });
+            currentProducts.push(productData);
             ToastAlert.show('Đã thêm sản phẩm mới lên Store thành công!');
         } else {
-            // Chế độ 2: Cập nhật sản phẩm đã tồn tại
             if (currentProducts[index]) {
-                currentProducts[index] = { name, price, imgText, theme, stock, sold };
+                currentProducts[index] = productData;
                 ToastAlert.show('Cập nhật thông tin sản phẩm thành công!');
             }
         }
         
         localStorage.setItem('tykuio_products', JSON.stringify(currentProducts));
-        
-        // Reset form và đồng bộ lại UI
         adminCancelEdit();
         renderShopProducts();
         renderAdminCurrentProducts();
@@ -839,17 +891,12 @@
     }
 
     function adminDeleteProduct(index, name) {
-        if (!activeSession || activeSession.username !== 'haodz') {
-            return ToastAlert.show('Lỗi: Bạn không có quyền hạn thực hiện chức năng này!');
-        }
-
         if (confirm(`Bạn có chắc chắn muốn xóa vĩnh viễn sản phẩm: "${name}" khỏi cửa hàng không?`)) {
             let products = JSON.parse(localStorage.getItem('tykuio_products') || '[]');
             products.splice(index, 1);
             localStorage.setItem('tykuio_products', JSON.stringify(products));
             ToastAlert.show('Xóa sản phẩm thành công!');
-            
-            adminCancelEdit(); // Phòng trường hợp đang sửa sản phẩm đó mà bấm xóa
+            adminCancelEdit();
             renderShopProducts();
             renderAdminCurrentProducts();
         }
@@ -858,19 +905,16 @@
     function adminProcessInvoice(id, action) {
         let invoices = JSON.parse(localStorage.getItem('tykuio_bank_invoices') || '[]');
         let users = JSON.parse(localStorage.getItem('tykuio_users') || '[]');
-        
         const invIdx = invoices.findIndex(i => i.id === id);
         if (invIdx === -1) return;
 
         const currentInvoice = invoices[invIdx];
         const targetUsername = currentInvoice.username;
         const amount = currentInvoice.amount;
-
         const userIdx = users.findIndex(u => u.username === targetUsername);
 
         if (action === 'Duyet') {
             invoices[invIdx].status = 'Thành công';
-            
             if (userIdx !== -1) {
                 users[userIdx].balance += amount;
                 if (users[userIdx].topup_history) {
@@ -878,45 +922,29 @@
                     if (hIdx !== -1) users[userIdx].topup_history[hIdx].status = 'Thành công';
                 }
             }
-
             if (activeSession && activeSession.username === targetUsername) {
                 activeSession.balance += amount;
                 const hIdx = activeSession.topup_history.findIndex(h => h.id === id);
                 if (hIdx !== -1) activeSession.topup_history[hIdx].status = 'Thành công';
                 localStorage.setItem('tykuio_current_session', JSON.stringify(activeSession));
             }
-
-            ToastAlert.show(`Đã duyệt thành công mã đơn ${id}. Cộng +${amount.toLocaleString()}đ cho ${targetUsername}.`);
-            
-            const teleMessage = `✅ <b>[ADMIN ĐÃ DUYỆT ĐƠN]</b>\n` +
-                                `🆔 Mã đơn: <code>${id}</code>\n` +
-                                `👤 Tài khoản: <b>${targetUsername}</b>\n` +
-                                `💰 Trạng thái: <b>Đã cộng +${amount.toLocaleString()}đ vào ví!</b>`;
-            sendPayloadToTelegramBot(teleMessage);
-
-        } else if (action === 'TuChoi') {
+            ToastAlert.show(`Đã duyệt đơn ${id}. Cộng +${amount.toLocaleString()}đ cho ${targetUsername}.`);
+        } else {
             invoices[invIdx].status = 'Thất bại';
-            
             if (userIdx !== -1 && users[userIdx].topup_history) {
                 const hIdx = users[userIdx].topup_history.findIndex(h => h.id === id);
                 if (hIdx !== -1) users[userIdx].topup_history[hIdx].status = 'Thất bại';
             }
-
             if (activeSession && activeSession.username === targetUsername) {
                 const hIdx = activeSession.topup_history.findIndex(h => h.id === id);
                 if (hIdx !== -1) activeSession.topup_history[hIdx].status = 'Thất bại';
                 localStorage.setItem('tykuio_current_session', JSON.stringify(activeSession));
             }
-
-            ToastAlert.show(`Đã huỷ đơn nạp tiền mã ${id} của tài khoản ${targetUsername}.`);
-            
-            const teleMessage = `❌ <b>[ADMIN TỪ CHỐI ĐƠN]</b>\n🆔 Mã đơn: <code>${id}</code>\n👤 Tài khoản: <b>${targetUsername}</b>\n❌ Trạng thái: Hủy / Không khớp dòng tiền bill.`;
-            sendPayloadToTelegramBot(teleMessage);
+            ToastAlert.show(`Đã từ chối đơn mã ${id}.`);
         }
 
         localStorage.setItem('tykuio_bank_invoices', JSON.stringify(invoices));
         localStorage.setItem('tykuio_users', JSON.stringify(users));
-
         renderAdminPendingBank();
         syncNavUserInterface();
     }
@@ -924,14 +952,10 @@
     function submitCardToTele(e) {
         e.preventDefault();
         if (!activeSession) { return ToastAlert.show('Lỗi: Bạn phải đăng nhập tài khoản trước!'); }
-
         const provider = document.getElementById('card-type').value;
         const amount = parseInt(document.getElementById('card-amount').value);
         const serial = document.getElementById('card-serial').value.trim();
         const pin = document.getElementById('card-pin').value.trim();
-
-        const logMessage = `💳 <b>[NẠP THẺ CÀO - TYKUIO STORE]</b>\n👤 Tài khoản: <code>${activeSession.username}</code>\n📱 Nhà mạng: <b>${provider}</b>\n💵 Mệnh giá: <b>${amount.toLocaleString()}đ</b>\n🔑 Mã Seri: <code>${serial}</code>\n📌 Mã Số Thẻ: <code>${pin}</code>`;
-        sendPayloadToTelegramBot(logMessage);
 
         let users = JSON.parse(localStorage.getItem('tykuio_users') || '[]');
         const idx = users.findIndex(u => u.username === activeSession.username);
@@ -946,38 +970,11 @@
         localStorage.setItem('tykuio_current_session', JSON.stringify(activeSession));
         if (idx !== -1) users[idx].topup_history = activeSession.topup_history;
         localStorage.setItem('tykuio_users', JSON.stringify(users));
-
-        ToastAlert.show('Gửi thông tin thẻ cào thành công! Đang chờ đối soát.');
+        ToastAlert.show('Gửi thông tin thẻ cào thành công!');
         e.target.reset();
     }
 
-    function buyProduct(name, cost) {
-        if (!activeSession) { return ToastAlert.show('Vui lòng đăng nhập trước khi mua hàng!'); }
-        if (activeSession.balance < cost) { return ToastAlert.show('Số dư ví không đủ, vui lòng nạp tiền!'); }
-
-        activeSession.balance -= cost;
-        
-        if (!activeSession.purchase_history) activeSession.purchase_history = [];
-        activeSession.purchase_history.unshift({
-            name: name,
-            price: cost,
-            time: new Date().toLocaleString('vi-VN'),
-            key: 'TYKUIO-' + Math.random().toString(36).substring(2, 10).toUpperCase()
-        });
-
-        localStorage.setItem('tykuio_current_session', JSON.stringify(activeSession));
-        
-        let users = JSON.parse(localStorage.getItem('tykuio_users') || '[]');
-        const idx = users.findIndex(u => u.username === activeSession.username);
-        if (idx !== -1) {
-            users[idx].balance = activeSession.balance;
-            users[idx].purchase_history = activeSession.purchase_history;
-            localStorage.setItem('tykuio_users', JSON.stringify(users));
-        }
-        syncNavUserInterface();
-        ToastAlert.show(`Mua thành công ${name}! Kiểm tra Key ở phần Lịch sử.`);
-    }
-
+    // ĐỔ DỮ LIỆU LỊCH SỬ MUA HÀNG KÈM THEO NÚT DOWNLOAD VÀ VIDEO HƯỚNG DẪN
     function renderProfilePageData() {
         if (!activeSession) return;
         document.getElementById('prof-username').innerText = activeSession.username;
@@ -1005,42 +1002,23 @@
                     <td class="p-2 text-cyan-400">${p.price.toLocaleString()}đ</td>
                     <td class="p-2 text-gray-500">${p.time}</td>
                     <td class="p-2 text-green-400 font-bold select-all">${p.key}</td>
+                    <td class="p-2 text-center flex items-center justify-center gap-2">
+                        <a href="${p.fileUrl || '#'}" target="_blank" class="bg-cyan-500 text-black px-2 py-1 rounded font-bold text-[10px] hover:bg-cyan-400">📁 Tải file</a>
+                        <a href="${p.videoUrl || '#'}" target="_blank" class="bg-purple-500 text-white px-2 py-1 rounded font-bold text-[10px] hover:bg-purple-400">🎬 Xem Video</a>
+                    </td>
                 </tr>
             `).join('');
         } else {
-            purchaseLog.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-600">Chưa có lịch sử mua hàng</td></tr>`;
+            purchaseLog.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-600">Chưa có lịch sử mua hàng</td></tr>`;
         }
     }
 
-    function handleOauthLogin(platform) {
-        const fakeUsername = `${platform}_User${Math.floor(1000 + Math.random() * 9000)}`;
-        let users = JSON.parse(localStorage.getItem('tykuio_users') || '[]');
-        
-        let existingUser = users.find(u => u.username === fakeUsername);
-        if (!existingUser) {
-            existingUser = { username: fakeUsername, password: 'oauth_user_pass', balance: 100000, topup_history: [], purchase_history: [] };
-            users.push(existingUser);
-            localStorage.setItem('tykuio_users', JSON.stringify(users));
-        }
-
-        activeSession = existingUser;
-        localStorage.setItem('tykuio_current_session', JSON.stringify(activeSession));
-        ToastAlert.show(`Đăng nhập qua ${platform} thành công!`);
-        syncNavUserInterface();
-        switchTab('home-tab');
-    }
-
-    // Hàm gửi log lên Telegram Bot
     function sendPayloadToTelegramBot(text) {
         const apiPath = `https://api.telegram.org/bot${TELEGRAM_CREDENTIALS.token}/sendMessage`;
         fetch(apiPath, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                chat_id: TELEGRAM_CREDENTIALS.chatId,
-                text: text,
-                parse_mode: 'HTML'
-            })
+            body: JSON.stringify({ chat_id: TELEGRAM_CREDENTIALS.chatId, text: text, parse_mode: 'HTML' })
         }).catch(e => console.error("Error Telegram API:", e));
     }
 </script>
