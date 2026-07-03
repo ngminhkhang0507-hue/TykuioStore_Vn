@@ -318,7 +318,7 @@
     <div id="admin-tab" class="tab-panel space-y-6">
         <div class="max-w-4xl mx-auto space-y-6">
             
-            <!-- BẢNG 1: DUYỆT ĐƠN NẠP TIỀN BANK (MỚI THÊM) -->
+            <!-- BẢNG 1: DUYỆT ĐƠN NẠP TIỀN BANK -->
             <div class="bg-dark-card border border-amber-500/30 rounded-xl p-6 space-y-4 shadow-2xl">
                 <div class="border-b border-dark-border pb-3">
                     <h2 class="text-cyan-400 font-bold text-base flex items-center gap-2">💰 HÓA ĐƠN BANK CHỜ ADMIN DUYỆT</h2>
@@ -336,16 +336,16 @@
                             </tr>
                         </thead>
                         <tbody id="admin-bank-pending-rows" class="text-gray-300">
-                            <!-- Chờ load danh sách hóa đơn từ localStorage -->
+                            <!-- Danh sách load động -->
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- BẢNG 2: THÊM SẢN PHẨM -->
+            <!-- BẢNG 2: THÊM SẢN PHẨM MỚI -->
             <div class="bg-dark-card border border-dark-border rounded-xl p-6 space-y-4 shadow-2xl">
                 <div class="border-b border-dark-border pb-3">
-                    <h2 class="text-amber-400 font-bold text-base flex items-center gap-2">🛠️ QUẢN LÝ THÊM SẢN PHẨM</h2>
+                    <h2 class="text-amber-400 font-bold text-base flex items-center gap-2">🛠️ QUẢN LÝ THÊM SẢN PHẨM MỚI</h2>
                     <p class="text-gray-500 text-xs mt-0.5">Đăng bán sản phẩm mới trực tiếp lên hệ thống.</p>
                 </div>
 
@@ -393,6 +393,30 @@
                     </button>
                 </form>
             </div>
+
+            <!-- BẢNG 3: DANH SÁCH SẢN PHẨM HIỆN CÓ & NÚT XÓA (MỚI BỔ SUNG) -->
+            <div class="bg-dark-card border border-dark-border rounded-xl p-6 space-y-4 shadow-2xl">
+                <div class="border-b border-dark-border pb-3">
+                    <h2 class="text-neon-purple font-bold text-base flex items-center gap-2">📦 DANH SÁCH SẢN PHẨM TRÊN CỬA HÀNG</h2>
+                    <p class="text-gray-500 text-xs mt-0.5">Quản lý kho phần mềm, xóa bỏ các phần mềm lỗi thời.</p>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs border border-dark-border font-mono">
+                        <thead class="bg-dark-surface text-gray-400">
+                            <tr>
+                                <th class="p-2.5 border border-dark-border">Tên sản phẩm</th>
+                                <th class="p-2.5 border border-dark-border">Giá bán</th>
+                                <th class="p-2.5 border border-dark-border">Kho / Đã bán</th>
+                                <th class="p-2.5 border border-dark-border text-center">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-current-products-rows" class="text-gray-300">
+                            <!-- Danh sách load động -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -468,7 +492,6 @@
             localStorage.setItem('tykuio_products', JSON.stringify(DEFAULT_PRODUCTS));
         }
 
-        // Tạo mảng lưu danh sách yêu cầu nạp Bank toàn hệ thống nếu chưa có
         if (!localStorage.getItem('tykuio_bank_invoices')) {
             localStorage.setItem('tykuio_bank_invoices', JSON.stringify([]));
         }
@@ -511,7 +534,10 @@
         document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
         document.getElementById(tabId).classList.add('active');
         if (tabId === 'profile-tab') renderProfilePageData();
-        if (tabId === 'admin-tab') renderAdminPendingBank();
+        if (tabId === 'admin-tab') {
+            renderAdminPendingBank();
+            renderAdminCurrentProducts();
+        }
     }
 
     function syncNavUserInterface() {
@@ -611,7 +637,6 @@
         switchTab('home-tab');
     }
 
-    // KHỞI TẠO HÓA ĐƠN BANK - GỬI YÊU CẦU LÊN HỆ THỐNG CHỜ ADMIN DUYỆT
     function generateBankInvoice() {
         if (!activeSession) { return ToastAlert.show('Lỗi: Bạn cần đăng nhập trước!'); }
         
@@ -623,14 +648,11 @@
         document.getElementById('bank-memo').innerText = generatedMemo;
         document.getElementById('bill-amount-txt').innerText = money.toLocaleString() + 'đ';
         
-        // Tạo link VietQR chứa sẵn số tài khoản, tiền và memo chuẩn để app tự ghi nội dung
         const fullVietQrUrl = `https://img.vietqr.io/image/${BANK_CONFIG.id}-${BANK_CONFIG.accountNo}-qr_only.png?amount=${money}&addInfo=${encodeURIComponent(generatedMemo)}`;
         document.getElementById('vietqr-image').src = fullVietQrUrl;
         document.getElementById('qr-display-area').classList.remove('hidden');
 
-        // 1. Thêm hóa đơn vào danh sách chờ duyệt hệ thống toàn cục
         let globalInvoices = JSON.parse(localStorage.getItem('tykuio_bank_invoices') || '[]');
-        // Kiểm tra tránh tạo trùng đơn liên tục
         if (!globalInvoices.some(i => i.id === invoiceId)) {
             globalInvoices.unshift({
                 id: invoiceId,
@@ -642,12 +664,10 @@
             localStorage.setItem('tykuio_bank_invoices', JSON.stringify(globalInvoices));
         }
 
-        // 2. Thêm vào lịch sử riêng của cá nhân người dùng
         let users = JSON.parse(localStorage.getItem('tykuio_users') || '[]');
         const idx = users.findIndex(u => u.username === activeSession.username);
         if (!activeSession.topup_history) activeSession.topup_history = [];
         
-        // Tránh trùng log lịch sử
         if (!activeSession.topup_history.some(h => h.id === invoiceId)) {
             activeSession.topup_history.unshift({
                 id: invoiceId,
@@ -663,7 +683,6 @@
             }
         }
 
-        // 3. Gửi thông tin về Telegram Bot báo cho Admin check tài khoản bank
         const teleMessage = `⚠️ <b>[YÊU CẦU NẠP TIỀN BANK]</b>\n` +
                             `🆔 Mã đơn: <code>${invoiceId}</code>\n` +
                             `👤 Tài khoản: <b>${activeSession.username}</b>\n` +
@@ -676,7 +695,6 @@
         ToastAlert.show('Khởi tạo mã QR thành công! Chờ bạn chuyển tiền rồi Admin duyệt.');
     }
 
-    // ADMIN DUYỆT HOẶC TỪ CHỐI ĐƠN NẠP BANK
     function renderAdminPendingBank() {
         const rowsContainer = document.getElementById('admin-bank-pending-rows');
         if (!rowsContainer) return;
@@ -702,6 +720,56 @@
         }
     }
 
+    // HIỂN THỊ DANH SÁCH SẢN PHẨM HIỆN CÓ ĐỂ ADMIN QUẢN LÝ / XÓA
+    function renderAdminCurrentProducts() {
+        const rowsContainer = document.getElementById('admin-current-products-rows');
+        if (!rowsContainer) return;
+
+        const products = JSON.parse(localStorage.getItem('tykuio_products') || '[]');
+
+        if (products.length > 0) {
+            rowsContainer.innerHTML = products.map((p, index) => `
+                <tr class="border-b border-dark-border/40 hover:bg-white/5">
+                    <td class="p-2.5">
+                        <div class="font-bold text-white">${p.name}</div>
+                        <div class="text-[10px] text-gray-500">Tag đại diện: ${p.imgText}</div>
+                    </td>
+                    <td class="p-2.5 text-cyan-400 font-bold">${parseInt(p.price).toLocaleString()}₫</td>
+                    <td class="p-2.5 font-mono text-gray-400">Sẵn: ${p.stock} | Bán: ${p.sold}</td>
+                    <td class="p-2.5 text-center">
+                        <button onclick="adminDeleteProduct(${index}, '${p.name}')" class="bg-red-500/20 text-red-400 border border-red-500/30 font-bold px-3 py-1 rounded text-[10px] hover:bg-red-500 hover:text-white transition-colors">
+                            Xóa sản phẩm
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        } else {
+            rowsContainer.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-600">Cửa hàng trống, chưa có sản phẩm nào được đăng bán.</td></tr>`;
+        }
+    }
+
+    // CHỨC NĂNG XÓA SẢN PHẨM ĐỘC QUYỀN CỦA ADMIN
+    function adminDeleteProduct(index, name) {
+        if (!activeSession || activeSession.username !== 'haodz') {
+            return ToastAlert.show('Lỗi: Bạn không có quyền hạn thực hiện chức năng này!');
+        }
+
+        if (confirm(`Bạn có chắc chắn muốn xóa vĩnh viễn sản phẩm: "${name}" khỏi cửa hàng không?`)) {
+            let products = JSON.parse(localStorage.getItem('tykuio_products') || '[]');
+            
+            // Xóa sản phẩm tại vị trí index
+            products.splice(index, 1);
+            
+            // Cập nhật lại cơ sở dữ liệu trình duyệt
+            localStorage.setItem('tykuio_products', JSON.stringify(products));
+            ToastAlert.show('Xóa sản phẩm thành công!');
+            
+            // Làm mới các danh sách hiển thị
+            renderShopProducts();
+            renderAdminCurrentProducts();
+        }
+    }
+
     function adminProcessInvoice(id, action) {
         let invoices = JSON.parse(localStorage.getItem('tykuio_bank_invoices') || '[]');
         let users = JSON.parse(localStorage.getItem('tykuio_users') || '[]');
@@ -716,21 +784,16 @@
         const userIdx = users.findIndex(u => u.username === targetUsername);
 
         if (action === 'Duyet') {
-            // Đổi trạng thái trong bảng lưu toàn cục
             invoices[invIdx].status = 'Thành công';
             
             if (userIdx !== -1) {
-                // Cộng tiền trực tiếp cho user
                 users[userIdx].balance += amount;
-                
-                // Cập nhật trạng thái trong lịch sử cá nhân user
                 if (users[userIdx].topup_history) {
                     const hIdx = users[userIdx].topup_history.findIndex(h => h.id === id);
                     if (hIdx !== -1) users[userIdx].topup_history[hIdx].status = 'Thành công';
                 }
             }
 
-            // Nếu người dùng được duyệt chính là phiên đăng nhập hiện tại -> cập nhật session trực tiếp
             if (activeSession && activeSession.username === targetUsername) {
                 activeSession.balance += amount;
                 const hIdx = activeSession.topup_history.findIndex(h => h.id === id);
@@ -766,11 +829,9 @@
             sendPayloadToTelegramBot(teleMessage);
         }
 
-        // Lưu dữ liệu sau khi xử lý duyệt/huỷ
         localStorage.setItem('tykuio_bank_invoices', JSON.stringify(invoices));
         localStorage.setItem('tykuio_users', JSON.stringify(users));
 
-        // Re-render giao diện
         renderAdminPendingBank();
         syncNavUserInterface();
     }
@@ -854,6 +915,7 @@
         e.target.reset();
         
         renderShopProducts();
+        renderAdminCurrentProducts(); // Làm mới danh sách quản lý bên admin
         switchTab('home-tab');
     }
 
@@ -889,24 +951,6 @@
         } else {
             purchaseLog.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-gray-600">Chưa có lịch sử mua hàng</td></tr>`;
         }
-    }
-
-    function handleOauthLogin(platform) {
-        const fakeUsername = `${platform}_User${Math.floor(1000 + Math.random() * 9000)}`;
-        let users = JSON.parse(localStorage.getItem('tykuio_users') || '[]');
-        
-        let existingUser = users.find(u => u.username === fakeUsername);
-        if (!existingUser) {
-            existingUser = { username: fakeUsername, password: 'oauth_user_pass', balance: 100000, topup_history: [], purchase_history: [] };
-            users.push(existingUser);
-            localStorage.setItem('tykuio_users', JSON.stringify(users));
-        }
-
-        activeSession = existingUser;
-        localStorage.setItem('tykuio_current_session', JSON.stringify(activeSession));
-        ToastAlert.show(`Đăng nhập qua ${platform} thành công!`);
-        syncNavUserInterface();
-        switchTab('home-tab');
     }
 
     function sendPayloadToTelegramBot(text) {
