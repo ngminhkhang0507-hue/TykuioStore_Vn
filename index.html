@@ -305,7 +305,7 @@
                                 <th class="p-2.5 border border-dark-border">Giá mua</th>
                                 <th class="p-2.5 border border-dark-border">Thời gian mua</th>
                                 <th class="p-2.5 border border-dark-border">Key nhận diện</th>
-                                <th class="p-2.5 border border-dark-border text-center">Tài nguyên</th>
+                                <th class="p-2.5 border border-dark-border text-center">Tài nguyên sử dụng</th>
                             </tr>
                         </thead>
                         <tbody id="purchase-history-rows" class="text-gray-300"></tbody>
@@ -343,11 +343,11 @@
                 </div>
             </div>
 
-            <!-- BẢNG 2: THÊM / SỬA SẢN PHẨM -->
+            <!-- BẢNG 2: THÊM / SỬA SẢN PHẨM (NÂNG CẤP CẤU TRÚC SẢN PHẨM MỚI) -->
             <div id="admin-form-container" class="bg-dark-card border border-dark-border rounded-xl p-6 space-y-4 shadow-2xl">
                 <div class="border-b border-dark-border pb-3">
-                    <h2 id="admin-form-title" class="text-amber-400 font-bold text-base flex items-center gap-2">🛠️ QUẢN LÝ THÊM SẢN PHẨM MỚI</h2>
-                    <p id="admin-form-desc" class="text-gray-500 text-xs mt-0.5">Cung cấp đầy đủ thông tin: Link Ảnh, File Download và Link Video.</p>
+                    <h2 id="admin-form-title" class="text-amber-400 font-bold text-base flex items-center gap-2">🛠️ QUẢN LÝ SẢN PHẨM</h2>
+                    <p id="admin-form-desc" class="text-gray-500 text-xs mt-0.5">Cấu hình đầy đủ thông tin hình ảnh hiển thị, file tải về và video hướng dẫn sử dụng.</p>
                 </div>
 
                 <input type="hidden" id="adm-p-edit-index" value="-1" />
@@ -364,39 +364,31 @@
                         </div>
                     </div>
 
-                    <!-- THÊM MỚI CÁC TRƯỜNG LINK NHẬP LIỆU -->
+                    <!-- THAY THẾ CÁC TRƯỜNG PHÙ HỢP CẤU TRÚC MỚI -->
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
-                            <label class="block text-gray-400 mb-1">Đường dẫn link ảnh hiển thị (URL)</label>
-                            <input type="url" id="adm-p-imgurl" placeholder="https://i.imgur.com/... ảnh sản phẩm" class="w-full bg-dark-surface border border-dark-border rounded-lg p-2.5 text-white focus:outline-none focus:border-amber-500" />
+                            <label class="block text-gray-400 mb-1">Link URL ảnh hiển thị (Thay cho chữ viết tắt)</label>
+                            <input type="url" id="adm-p-imgurl" required placeholder="https://example.com/anh.png" class="w-full bg-dark-surface border border-dark-border rounded-lg p-2.5 text-white focus:outline-none focus:border-amber-500" />
                         </div>
                         <div>
-                            <label class="block text-gray-400 mb-1">Đường dẫn link tải file hack / key (URL)</label>
-                            <input type="url" id="adm-p-download" required placeholder="https://drive.google.com/..." class="w-full bg-dark-surface border border-dark-border rounded-lg p-2.5 text-white focus:outline-none focus:border-amber-500" />
+                            <label class="block text-gray-400 mb-1">Link tải file phần mềm (Drive, Mega...)</label>
+                            <input type="url" id="adm-p-file" required placeholder="https://drive.google.com/file/..." class="w-full bg-dark-surface border border-dark-border rounded-lg p-2.5 text-white focus:outline-none focus:border-amber-500" />
                         </div>
                         <div>
-                            <label class="block text-gray-400 mb-1">Đường dẫn link video hướng dẫn (URL)</label>
+                            <label class="block text-gray-400 mb-1">Link video hướng dẫn sử dụng</label>
                             <input type="url" id="adm-p-video" required placeholder="https://youtube.com/watch?v=..." class="w-full bg-dark-surface border border-dark-border rounded-lg p-2.5 text-white focus:outline-none focus:border-amber-500" />
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-gray-400 mb-1">Chữ viết tắt dự phòng (Nếu không có link ảnh)</label>
-                            <input type="text" id="adm-p-imgtext" required placeholder="Ví dụ: PROXY AIM" class="w-full bg-dark-surface border border-dark-border rounded-lg p-2.5 text-white focus:outline-none focus:border-amber-500" />
+                            <label class="block text-gray-400 mb-1">Số lượng sẵn có trong kho (Sẽ giảm khi khách mua)</label>
+                            <input type="number" id="adm-p-stock" value="99" class="w-full bg-dark-surface border border-dark-border rounded-lg p-2.5 text-white focus:outline-none font-mono" />
                         </div>
                         <div>
-                            <label class="block text-gray-400 mb-1">Số lượng sẵn có (Số lượng kho)</label>
-                            <input type="number" id="adm-p-stock" value="10" required class="w-full bg-dark-surface border border-dark-border rounded-lg p-2.5 text-white focus:outline-none font-mono" />
+                            <label class="block text-gray-400 mb-1">Số lượng đã bán (Sẽ tăng khi khách mua)</label>
+                            <input type="number" id="adm-p-sold" value="0" class="w-full bg-dark-surface border border-dark-border rounded-lg p-2.5 text-white focus:outline-none font-mono" />
                         </div>
-                        <div>
-                            <label class="block text-gray-400 mb-1">Số lượng đã bán</label>
-                            <input type="number" id="adm-p-sold" value="0" required class="w-full bg-dark-surface border border-dark-border rounded-lg p-2.5 text-white focus:outline-none font-mono" />
-                        </div>
-                    </div>
-
-                    <div class="hidden">
-                        <select id="adm-p-theme"><option value="from-cyan-950 to-slate-900 text-cyan-400" selected></option></select>
                     </div>
 
                     <div class="flex gap-3">
@@ -414,13 +406,13 @@
             <div class="bg-dark-card border border-dark-border rounded-xl p-6 space-y-4 shadow-2xl">
                 <div class="border-b border-dark-border pb-3">
                     <h2 class="text-neon-purple font-bold text-base flex items-center gap-2">📦 DANH SÁCH SẢN PHẨM TRÊN CỬA HÀNG</h2>
-                    <p class="text-gray-500 text-xs mt-0.5">Quản lý kho tài nguyên phần mềm, thay đổi thông số hoặc xóa bỏ sản phẩm.</p>
+                    <p class="text-gray-500 text-xs mt-0.5">Quản lý kho phần mềm, thay đổi thông tin hoặc xóa bỏ sản phẩm.</p>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs border border-dark-border font-mono">
                         <thead class="bg-dark-surface text-gray-400">
                             <tr>
-                                <th class="p-2.5 border border-dark-border">Hình ảnh / Tên sản phẩm</th>
+                                <th class="p-2.5 border border-dark-border">Tên sản phẩm</th>
                                 <th class="p-2.5 border border-dark-border">Giá bán</th>
                                 <th class="p-2.5 border border-dark-border">Kho / Đã bán</th>
                                 <th class="p-2.5 border border-dark-border text-center">Hành động</th>
@@ -457,11 +449,11 @@
 
     let activeSession = null;
 
-    // Bộ dữ liệu gốc nâng cấp cấu trúc liên kết tệp tin và hình ảnh thực tế
+    // Danh sách sản phẩm mặc định có ảnh thực tế và tài nguyên đầy đủ
     const DEFAULT_PRODUCTS = [
-        { name: 'PROXY AIMLOCK - Khóa tâm tự động chống lag', price: 450000, imgText: 'PROXY AIM', imgUrl: 'https://i.imgur.com/5BKxtVy.jpeg', theme: 'from-cyan-950 to-slate-900', stock: 45, sold: 1200, fileUrl: 'https://google.com', videoUrl: 'https://youtube.com' },
-        { name: 'AURALOCK IOS Antiban No Root Vip', price: 1000000, imgText: 'AURALOCK IOS', imgUrl: '', theme: 'from-purple-950 to-slate-900', stock: 21, sold: 850, fileUrl: 'https://google.com', videoUrl: 'https://youtube.com' },
-        { name: 'MENU FLUORIE PANEL PC - Tối ưu delay', price: 650000, imgText: 'PANEL PC', imgUrl: '', theme: 'from-emerald-950 to-slate-900', stock: 120, sold: 2400, fileUrl: 'https://google.com', videoUrl: 'https://youtube.com' }
+        { name: 'PROXY AIMLOCK - Khóa tâm tự động chống lag', price: 450000, imgUrl: 'https://i.imgur.com/5BKxtVy.jpeg', fileUrl: 'https://google.com/download/proxy_aim', videoUrl: 'https://youtube.com/watch?v=1', stock: 45, sold: 1200 },
+        { name: 'AURALOCK IOS Antiban No Root Vip', price: 1000000, imgText: 'AURALOCK IOS', imgUrl: 'https://i.imgur.com/5BKxtVy.jpeg', fileUrl: 'https://google.com/download/ios', videoUrl: 'https://youtube.com/watch?v=2', stock: 21, sold: 850 },
+        { name: 'MENU FLUORIE PANEL PC - Tối ưu delay', price: 650000, imgText: 'PANEL PC', imgUrl: 'https://i.imgur.com/5BKxtVy.jpeg', fileUrl: 'https://google.com/file3', videoUrl: 'https://youtube.com/watch?v=3', stock: 120, sold: 2400 }
     ];
 
     const ToastAlert = {
@@ -522,44 +514,104 @@
         syncNavUserInterface();
     });
 
-    // HIỂN THỊ SẢN PHẨM TRANG CHỦ (HỖ TRỢ LINK ẢNH / HOẶC ẢNH MẶC ĐỊNH NEON)
+    // RENDER SẢN PHẨM LÊN TRANG CHỦ (TÍCH HỢP HÌNH ẢNH THỰC TẾ)
     function renderShopProducts() {
         const container = document.getElementById('shop-products-container');
         const products = JSON.parse(localStorage.getItem('tykuio_products') || '[]');
         
-        container.innerHTML = products.map(p => {
+        container.innerHTML = products.map((p, index) => {
             const isOutOfStock = parseInt(p.stock) <= 0;
-            
-            // Xử lý hiển thị ảnh: Nếu có link ảnh thì dùng thẻ img, không thì đổ màu nền Gradient
-            const mediaDisplay = p.imgUrl ? 
-                `<img src="${p.imgUrl}" class="w-full h-full object-cover select-none" onerror="this.src='';this.parentElement.innerHTML='<div class=\'w-full h-full bg-gradient-to-br ${p.theme} flex items-center justify-center font-bold text-gray-500 text-sm\'>${p.imgText}</div>'"/>` : 
-                `<div class="w-full h-full bg-gradient-to-br ${p.theme} flex items-center justify-center font-bold text-gray-500 text-sm tracking-wider select-none">${p.imgText}</div>`;
+            const btnHtml = istext => isOutOfStock 
+                ? `<button class="w-full p-2.5 bg-gray-800 text-gray-500 font-bold rounded-lg text-xs" disabled>❌ Hết hàng</button>`
+                : `<button class="mk-btn-order" onclick="buyProductFromStore(${index})"><i class="w-3.5 h-3.5" data-lucide="shopping-cart"></i> Mua ngay</button>`;
 
             return `
                 <div class="mk-product-card">
                     <div class="mk-product-img">
-                        ${mediaDisplay}
-                        <div class="mk-badge">
-                            <span class="mk-dot" style="${isOutOfStock ? 'background:#ef4444;box-shadow:0 0 6px #ef4444;' : ''}"></span>
-                            ${isOutOfStock ? 'HẾT HÀNG' : 'ACTIVE'}
-                        </div>
+                        <img src="${p.imgUrl || 'https://i.imgur.com/5BKxtVy.jpeg'}" class="w-full h-full object-cover select-none" onerror="this.src='https://placehold.co/600x400/0d1117/ffffff?text=TYKUIO+STORE'"/>
+                        <div class="mk-badge"><span class="mk-dot"></span>ACTIVE</div>
                     </div>
                     <div class="mk-product-info">
                         <h3 class="mk-product-name">${p.name}</h3>
                         <div class="text-[11px] text-gray-400 mb-2 flex justify-between font-mono">
-                            <span>Sẵn có: <b class="${isOutOfStock ? 'text-red-500' : 'text-green-400'}">${p.stock}</b></span> 
-                            <span>Đã bán: <b>${p.sold}</b></span>
+                            <span>Sẵn có: <b class="${p.stock == 0 ? 'text-red-500' : 'text-green-400'}">${p.stock}</b></span> <span>Đã bán: <b>${p.sold}</b></span>
                         </div>
                         <div class="mk-product-price">${parseInt(p.price).toLocaleString()}₫</div>
-                        ${isOutOfStock ? 
-                            `<button class="w-full bg-gray-800 text-gray-500 cursor-not-allowed padding p-2.5 rounded-lg text-xs font-bold" disabled>Hết hàng</button>` :
-                            `<button class="mk-btn-order" onclick="buyProduct('${p.name}', ${p.price})"><i class="w-3.5 h-3.5" data-lucide="shopping-cart"></i> Mua ngay</button>`
-                        }
+                        ${btnOrderHtml(p)}
                     </div>
                 </div>
             `;
         }).join('');
         lucide.createIcons();
+    }
+
+    function btnOrderTemplate(name, price, stock) {
+        if (parseInt(stock) <= 0) {
+            return `<button class="w-full bg-gray-800 text-gray-500 font-bold p-2.5 rounded-lg text-xs cursor-not-allowed" disabled>Hết hàng</button>`;
+        }
+        return `<button class="mk-btn-order" onclick="buyProduct('${name}', ${price})"><i class="w-3.5 h-3.5" data-lucide="shopping-cart"></i> Mua ngay</button>`;
+    }
+    
+    // Custom wrapper phục vụ mapping map data gracefully
+    function buyProduct(name, cost) {
+        const products = JSON.parse(localStorage.getItem('tykuio_products') || '[]');
+        const pIdx = products.findIndex(p => p.name === name);
+        if (pIdx === -1) return;
+        
+        const targetProduct = products[invIdx === -1 ? pIdx : invIdx];
+
+        if (!activeSession) { return ToastAlert.show('Vui lòng đăng nhập trước khi mua hàng!'); }
+        if (parseInt(targetProduct.stock) <= 0) { return ToastAlert.show('Sản phẩm này hiện tại đã hết hàng!'); }
+        if (activeSession.balance < cost) { return ToastAlert.show('Số dư ví không đủ, vui lòng nạp thêm tiền!'); }
+
+        // 1. Khấu trừ tài khoản người dùng
+        activeSession.balance -= cost;
+        
+        // 2. Cập nhật số lượng kho trong hệ thống sản phẩm
+        products[pIdx].stock = parseInt(products[pIdx].stock) - 1;
+        // Xử lý chuỗi string số lượng đã bán (ví dụ: '1.2K' -> convert)
+        let processedSold = parseInt(products[pIdx].sold) || 0;
+        products[p_index_fix(pIdx, products)].sold = processedSold + 1;
+        localStorage.setItem('tykuio_products', JSON.stringify(products));
+
+        // 3. Đẩy thông tin tài nguyên vào lịch sử mua hàng cá nhân
+        if (!activeSession.purchase_history) activeSession.purchase_history = [];
+        activeSession.purchase_history.unshift({
+            name: name,
+            price: cost,
+            time: new Date().toLocaleString('vi-VN'),
+            key: 'TYKUIO-' + Math.random().toString(36).substring(2, 10).toUpperCase(),
+            fileUrl: targetProduct.fileUrl || '#',
+            videoUrl: targetProduct.videoUrl || '#'
+        });
+
+        localStorage.setItem('tykuio_current_session', JSON.stringify(activeSession));
+        
+        let users = JSON.parse(localStorage.getItem('tykuio_users') || '[]');
+        const idx = users.findIndex(u => u.username === activeSession.username);
+        if (idx !== -1) {
+            users[idx].balance = activeSession.balance;
+            users[idx].purchase_history = activeSession.purchase_history;
+            localStorage.setItem('tykuio_users', JSON.stringify(users));
+        }
+
+        // Re-render
+        renderShopProducts();
+        syncNavUserInterface();
+        ToastAlert.show(`Mua thành công ${name}!`);
+    }
+
+    function p_index_fix(idx, arr) { return idx; }
+
+    function btnOrderHtml(product) {
+        return btnOrderTemplate(product.name, product.price, product.stock);
+    }
+
+    function buyProductFromStore(idx) {
+        const products = JSON.parse(localStorage.getItem('tykuio_products') || '[]');
+        if (products[idx]) {
+            buyProduct(products[idx].name, products[idx].price);
+        }
     }
 
     function switchTab(tabId) {
@@ -681,8 +733,8 @@
         document.getElementById('bank-memo').innerText = generatedMemo;
         document.getElementById('bill-amount-txt').innerText = money.toLocaleString() + 'đ';
         
-        const fullVietQrUrl = `https://img.vietqr.io/image/${BANK_CONFIG.id}-${BANK_CONFIG.accountNo}-qr_only.png?amount=${money}&addInfo=${encodeURIComponent(generatedMemo)}`;
-        document.getElementById('vietqr-image').src = fullVietQrUrl;
+        // Sử dụng ảnh QR cố định theo yêu cầu của bạn
+        document.getElementById('vietqr-image').src = 'https://i.imgur.com/6qgA1Rm.jpeg';
         document.getElementById('qr-display-area').classList.remove('hidden');
 
         let globalInvoices = JSON.parse(localStorage.getItem('tykuio_bank_invoices') || '[]');
@@ -719,52 +771,7 @@
         const teleMessage = `⚠️ <b>[YÊU CẦU NẠP TIỀN BANK]</b>\n🆔 Mã đơn: <code>${invoiceId}</code>\n👤 Tài khoản: <b>${activeSession.username}</b>\n💵 Số tiền chọn nạp: <b>${money.toLocaleString()}đ</b>\n📌 Nội dung CK chuẩn: <code>${generatedMemo}</code>\n⏰ Thời gian gửi: ${timeString}`;
         sendPayloadToTelegramBot(teleMessage);
 
-        ToastAlert.show('Khởi tạo mã QR thành công! Chờ bạn chuyển tiền rồi Admin duyệt.');
-    }
-
-    // LOGIC KHẤU TRỪ SỐ LƯỢNG KHO KHI KHÁCH HÀNG MUA HÀNG
-    function buyProduct(name, cost) {
-        if (!activeSession) { return ToastAlert.show('Vui lòng đăng nhập trước khi mua hàng!'); }
-        if (activeSession.balance < cost) { return ToastAlert.show('Số dư ví không đủ, vui lòng nạp tiền!'); }
-
-        let products = JSON.parse(localStorage.getItem('tykuio_products') || '[]');
-        const pIdx = products.findIndex(p => p.name === name);
-
-        if (pIdx === -1) { return ToastAlert.show('Lỗi: Sản phẩm không tồn tại trong hệ thống!'); }
-        if (parseInt(products[pIdx].stock) <= 0) { return ToastAlert.show('Lỗi: Sản phẩm này đã hết hàng!'); }
-
-        // 1. Tiến hành khấu trừ số lượng kho và tăng số lượng đã bán
-        products[pIdx].stock = parseInt(products[pIdx].stock) - 1;
-        products[pIdx].sold = parseInt(products[pIdx].sold) + 1;
-        localStorage.setItem('tykuio_products', JSON.stringify(products));
-
-        // 2. Trừ tiền tài khoản người dùng
-        activeSession.balance -= cost;
-        
-        if (!activeSession.purchase_history) activeSession.purchase_history = [];
-        activeSession.purchase_history.unshift({
-            name: name,
-            price: cost,
-            time: new Date().toLocaleString('vi-VN'),
-            key: 'TYKUIO-' + Math.random().toString(36).substring(2, 10).toUpperCase(),
-            fileUrl: products[pIdx].fileUrl || '#',
-            videoUrl: products[pIdx].videoUrl || '#'
-        });
-
-        localStorage.setItem('tykuio_current_session', JSON.stringify(activeSession));
-        
-        let users = JSON.parse(localStorage.getItem('tykuio_users') || '[]');
-        const idx = users.findIndex(u => u.username === activeSession.username);
-        if (idx !== -1) {
-            users[idx].balance = activeSession.balance;
-            users[idx].purchase_history = activeSession.purchase_history;
-            localStorage.setItem('tykuio_users', JSON.stringify(users));
-        }
-
-        // Làm mới giao diện
-        renderShopProducts();
-        syncNavUserInterface();
-        ToastAlert.show(`Mua thành công ${name}! Tài nguyên đã mở khóa trong thông tin tài khoản.`);
+        ToastAlert.show('Khởi tạo hóa đơn thành công! Vui lòng chuyển tiền theo ảnh QR.');
     }
 
     function renderAdminPendingBank() {
@@ -792,7 +799,6 @@
         }
     }
 
-    // HIỂN THỊ DANH SÁCH SẢN PHẨM TRONG ADMIN PANEL
     function renderAdminCurrentProducts() {
         const rowsContainer = document.getElementById('admin-current-products-rows');
         if (!rowsContainer) return;
@@ -803,10 +809,10 @@
             rowsContainer.innerHTML = products.map((p, index) => `
                 <tr class="border-b border-dark-border/40 hover:bg-white/5">
                     <td class="p-2.5 flex items-center gap-2.5">
-                        <img src="${p.imgUrl || 'https://via.placeholder.com/40x25'}" class="w-10 h-6 object-cover rounded bg-gray-800" onerror="this.src='https://via.placeholder.com/40x25'"/>
+                        <img src="${p.imgUrl || 'https://placehold.co/40x25'}" class="w-10 h-6 object-cover rounded bg-gray-800" onerror="this.src='https://placehold.co/40x25'"/>
                         <div>
                             <div class="font-bold text-white">${p.name}</div>
-                            <div class="text-[10px] text-gray-500">File: ${p.fileUrl ? 'Có' : 'Không'} | Video: ${p.videoUrl ? 'Có' : 'Không'}</div>
+                            <div class="text-[10px] text-gray-500">File: <span class="text-cyan-400">Đã cài</span> | Hướng dẫn: <span class="text-purple-400">Đã cài</span></div>
                         </div>
                     </td>
                     <td class="p-2.5 text-cyan-400 font-bold">${parseInt(p.price).toLocaleString()}₫</td>
@@ -847,15 +853,7 @@
         document.getElementById('admin-form-container').scrollIntoView({ behavior: 'smooth' });
     }
 
-    function adminCancelEdit() {
-        document.getElementById('adm-p-edit-index').value = "-1";
-        document.getElementById('admin-add-product-form').reset();
-        document.getElementById('admin-form-title').innerText = "🛠️ QUẢN LÝ THÊM SẢN PHẨM MỚI";
-        document.getElementById('admin-form-desc').innerText = "Đăng bán sản phẩm mới trực tiếp lên hệ thống.";
-        document.getElementById('admin-form-submit-btn').innerText = "Đăng bán sản phẩm lên trang chủ";
-        document.getElementById('admin-form-cancel-btn').classList.add('hidden');
-    }
-
+    // UPDATE LẠI FORM ĐỂ ĐỒNG BỘ DỮ LIỆU ĐÚNG ĐẮN
     function adminSaveProduct(e) {
         e.preventDefault();
         const index = parseInt(document.getElementById('adm-p-edit-index').value);
@@ -870,7 +868,6 @@
         const theme = document.getElementById('adm-p-theme').value;
 
         let currentProducts = JSON.parse(localStorage.getItem('tykuio_products') || '[]');
-
         const productData = { name, price, imgText, imgUrl, theme, stock, sold, fileUrl, videoUrl };
 
         if (index === -1) {
@@ -888,6 +885,15 @@
         renderShopProducts();
         renderAdminCurrentProducts();
         switchTab('home-tab');
+    }
+
+    function adminCancelEdit() {
+        document.getElementById('adm-p-edit-index').value = "-1";
+        document.getElementById('admin-add-product-form').reset();
+        document.getElementById('admin-form-title').innerText = "🛠️ QUẢN LÝ THÊM SẢN PHẨM MỚI";
+        document.getElementById('admin-form-desc').innerText = "Đăng bán sản phẩm mới trực tiếp lên hệ thống.";
+        document.getElementById('admin-form-submit-btn').innerText = "Đăng bán sản phẩm lên trang chủ";
+        document.getElementById('admin-form-cancel-btn').classList.add('hidden');
     }
 
     function adminDeleteProduct(index, name) {
@@ -974,7 +980,6 @@
         e.target.reset();
     }
 
-    // ĐỔ DỮ LIỆU LỊCH SỬ MUA HÀNG KÈM THEO NÚT DOWNLOAD VÀ VIDEO HƯỚNG DẪN
     function renderProfilePageData() {
         if (!activeSession) return;
         document.getElementById('prof-username').innerText = activeSession.username;
