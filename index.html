@@ -342,14 +342,17 @@
                 </div>
             </div>
 
-            <!-- BẢNG 2: THÊM SẢN PHẨM MỚI -->
-            <div class="bg-dark-card border border-dark-border rounded-xl p-6 space-y-4 shadow-2xl">
+            <!-- BẢNG 2: THÊM / SỬA SẢN PHẨM (NÂNG CẤP ĐA NĂNG) -->
+            <div id="admin-form-container" class="bg-dark-card border border-dark-border rounded-xl p-6 space-y-4 shadow-2xl">
                 <div class="border-b border-dark-border pb-3">
-                    <h2 class="text-amber-400 font-bold text-base flex items-center gap-2">🛠️ QUẢN LÝ THÊM SẢN PHẨM MỚI</h2>
-                    <p class="text-gray-500 text-xs mt-0.5">Đăng bán sản phẩm mới trực tiếp lên hệ thống.</p>
+                    <h2 id="admin-form-title" class="text-amber-400 font-bold text-base flex items-center gap-2">🛠️ QUẢN LÝ THÊM SẢN PHẨM MỚI</h2>
+                    <p id="admin-form-desc" class="text-gray-500 text-xs mt-0.5">Đăng bán sản phẩm mới trực tiếp lên hệ thống.</p>
                 </div>
 
-                <form id="admin-add-product-form" onsubmit="adminAddProduct(event)" class="space-y-4 text-xs">
+                <!-- Input ẩn để lưu vị trí sản phẩm đang sửa -->
+                <input type="hidden" id="adm-p-edit-index" value="-1" />
+
+                <form id="admin-add-product-form" onsubmit="adminSaveProduct(event)" class="space-y-4 text-xs">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-gray-400 mb-1">Tên sản phẩm</label>
@@ -380,25 +383,30 @@
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <label class="block text-gray-400 mb-1">Số lượng sẵn có</label>
-                            <input type="number" id="adm-p-stock" value="99" class="w-full bg-dark-surface border border-dark-border rounded-lg p-2.5 text-white focus:outline-none font-mono" />
+                            <input type="text" id="adm-p-stock" value="99" class="w-full bg-dark-surface border border-dark-border rounded-lg p-2.5 text-white focus:outline-none font-mono" />
                         </div>
                         <div>
                             <label class="block text-gray-400 mb-1">Số lượng đã bán</label>
-                            <input type="number" id="adm-p-sold" value="0" class="w-full bg-dark-surface border border-dark-border rounded-lg p-2.5 text-white focus:outline-none font-mono" />
+                            <input type="text" id="adm-p-sold" value="0" class="w-full bg-dark-surface border border-dark-border rounded-lg p-2.5 text-white focus:outline-none font-mono" />
                         </div>
                     </div>
 
-                    <button type="submit" class="w-full bg-amber-500 text-black font-bold py-3 rounded-lg uppercase tracking-wide hover:bg-amber-400 transition-colors">
-                        Đăng bán sản phẩm lên trang chủ
-                    </button>
+                    <div class="flex gap-3">
+                        <button type="submit" id="admin-form-submit-btn" class="flex-1 bg-amber-500 text-black font-bold py-3 rounded-lg uppercase tracking-wide hover:bg-amber-400 transition-colors">
+                            Đăng bán sản phẩm lên trang chủ
+                        </button>
+                        <button type="button" id="admin-form-cancel-btn" onclick="adminCancelEdit()" class="hidden bg-gray-700 text-white font-bold px-5 py-3 rounded-lg uppercase tracking-wide hover:bg-gray-600 transition-colors">
+                            Hủy
+                        </button>
+                    </div>
                 </form>
             </div>
 
-            <!-- BẢNG 3: DANH SÁCH SẢN PHẨM HIỆN CÓ & NÚT XÓA (MỚI BỔ SUNG) -->
+            <!-- BẢNG 3: DANH SÁCH SẢN PHẨM HIỆN CÓ & NÚT XÓA / SỬA -->
             <div class="bg-dark-card border border-dark-border rounded-xl p-6 space-y-4 shadow-2xl">
                 <div class="border-b border-dark-border pb-3">
                     <h2 class="text-neon-purple font-bold text-base flex items-center gap-2">📦 DANH SÁCH SẢN PHẨM TRÊN CỬA HÀNG</h2>
-                    <p class="text-gray-500 text-xs mt-0.5">Quản lý kho phần mềm, xóa bỏ các phần mềm lỗi thời.</p>
+                    <p class="text-gray-500 text-xs mt-0.5">Quản lý kho phần mềm, thay đổi thông tin hoặc xóa bỏ sản phẩm.</p>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-xs border border-dark-border font-mono">
@@ -537,6 +545,7 @@
         if (tabId === 'admin-tab') {
             renderAdminPendingBank();
             renderAdminCurrentProducts();
+            adminCancelEdit(); // Reset form về trạng thái Thêm mới khi đổi tab
         }
     }
 
@@ -720,7 +729,6 @@
         }
     }
 
-    // HIỂN THỊ DANH SÁCH SẢN PHẨM HIỆN CÓ ĐỂ ADMIN QUẢN LÝ / XÓA
     function renderAdminCurrentProducts() {
         const rowsContainer = document.getElementById('admin-current-products-rows');
         if (!rowsContainer) return;
@@ -736,9 +744,12 @@
                     </td>
                     <td class="p-2.5 text-cyan-400 font-bold">${parseInt(p.price).toLocaleString()}₫</td>
                     <td class="p-2.5 font-mono text-gray-400">Sẵn: ${p.stock} | Bán: ${p.sold}</td>
-                    <td class="p-2.5 text-center">
+                    <td class="p-2.5 text-center flex items-center justify-center gap-2">
+                        <button onclick="adminEditProduct(${index})" class="bg-blue-500/20 text-blue-400 border border-blue-500/30 font-bold px-3 py-1 rounded text-[10px] hover:bg-blue-500 hover:text-white transition-colors">
+                            Sửa
+                        </button>
                         <button onclick="adminDeleteProduct(${index}, '${p.name}')" class="bg-red-500/20 text-red-400 border border-red-500/30 font-bold px-3 py-1 rounded text-[10px] hover:bg-red-500 hover:text-white transition-colors">
-                            Xóa sản phẩm
+                            Xóa
                         </button>
                     </td>
                 </tr>
@@ -748,7 +759,85 @@
         }
     }
 
-    // CHỨC NĂNG XÓA SẢN PHẨM ĐỘC QUYỀN CỦA ADMIN
+    // ĐIỀN THÔNG TIN SẢN PHẨM VÀO FORM ĐỂ SỬA
+    function adminEditProduct(index) {
+        if (!activeSession || activeSession.username !== 'haodz') {
+            return ToastAlert.show('Lỗi: Bạn không có quyền hạn thực hiện chức năng này!');
+        }
+
+        const products = JSON.parse(localStorage.getItem('tykuio_products') || '[]');
+        const targetProduct = products[index];
+
+        if (!targetProduct) return;
+
+        // Điền dữ liệu vào form
+        document.getElementById('adm-p-edit-index').value = index;
+        document.getElementById('adm-p-name').value = targetProduct.name;
+        document.getElementById('adm-p-price').value = targetProduct.price;
+        document.getElementById('adm-p-imgtext').value = targetProduct.imgText;
+        document.getElementById('adm-p-theme').value = targetProduct.theme;
+        document.getElementById('adm-p-stock').value = targetProduct.stock;
+        document.getElementById('adm-p-sold').value = targetProduct.sold;
+
+        // Thay đổi UI tiêu đề và nút bấm form
+        document.getElementById('admin-form-title').innerText = "📝 CHỈNH SỬA THÔNG TIN SẢN PHẨM";
+        document.getElementById('admin-form-desc').innerText = "Thay đổi thông số phần mềm và lưu lại vào hệ thống Store.";
+        document.getElementById('admin-form-submit-btn').innerText = "Cập nhật thông tin sản phẩm";
+        document.getElementById('admin-form-cancel-btn').classList.remove('hidden');
+
+        // Cuộn màn hình mượt mà lên vị trí form để sửa ngay lập tức
+        document.getElementById('admin-form-container').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // HỦY BỎ CHẾ ĐỘ SỬA - QUAY VỀ THÊM MỚI
+    function adminCancelEdit() {
+        document.getElementById('adm-p-edit-index').value = "-1";
+        document.getElementById('admin-add-product-form').reset();
+
+        document.getElementById('admin-form-title').innerText = "🛠️ QUẢN LÝ THÊM SẢN PHẨM MỚI";
+        document.getElementById('admin-form-desc').innerText = "Đăng bán sản phẩm mới trực tiếp lên hệ thống.";
+        document.getElementById('admin-form-submit-btn').innerText = "Đăng bán sản phẩm lên trang chủ";
+        document.getElementById('admin-form-cancel-btn').classList.add('hidden');
+    }
+
+    // LƯU HỢP NHẤT: XỬ LÝ CẢ THÊM MỚI HOẶC CẬP NHẬT SỬA ĐỔI
+    function adminSaveProduct(e) {
+        e.preventDefault();
+        if (!activeSession || activeSession.username !== 'haodz') {
+            return ToastAlert.show('Lỗi: Bạn không có quyền hạn thực hiện chức năng này!');
+        }
+
+        const index = parseInt(document.getElementById('adm-p-edit-index').value);
+        const name = document.getElementById('adm-p-name').value.trim();
+        const price = parseInt(document.getElementById('adm-p-price').value);
+        const imgText = document.getElementById('adm-p-imgtext').value.trim();
+        const theme = document.getElementById('adm-p-theme').value;
+        const stock = document.getElementById('adm-p-stock').value;
+        const sold = document.getElementById('adm-p-sold').value;
+
+        let currentProducts = JSON.parse(localStorage.getItem('tykuio_products') || '[]');
+
+        if (index === -1) {
+            // Chế độ 1: Thêm sản phẩm mới
+            currentProducts.push({ name, price, imgText, theme, stock, sold });
+            ToastAlert.show('Đã thêm sản phẩm mới lên Store thành công!');
+        } else {
+            // Chế độ 2: Cập nhật sản phẩm đã tồn tại
+            if (currentProducts[index]) {
+                currentProducts[index] = { name, price, imgText, theme, stock, sold };
+                ToastAlert.show('Cập nhật thông tin sản phẩm thành công!');
+            }
+        }
+        
+        localStorage.setItem('tykuio_products', JSON.stringify(currentProducts));
+        
+        // Reset form và đồng bộ lại UI
+        adminCancelEdit();
+        renderShopProducts();
+        renderAdminCurrentProducts();
+        switchTab('home-tab');
+    }
+
     function adminDeleteProduct(index, name) {
         if (!activeSession || activeSession.username !== 'haodz') {
             return ToastAlert.show('Lỗi: Bạn không có quyền hạn thực hiện chức năng này!');
@@ -756,15 +845,11 @@
 
         if (confirm(`Bạn có chắc chắn muốn xóa vĩnh viễn sản phẩm: "${name}" khỏi cửa hàng không?`)) {
             let products = JSON.parse(localStorage.getItem('tykuio_products') || '[]');
-            
-            // Xóa sản phẩm tại vị trí index
             products.splice(index, 1);
-            
-            // Cập nhật lại cơ sở dữ liệu trình duyệt
             localStorage.setItem('tykuio_products', JSON.stringify(products));
             ToastAlert.show('Xóa sản phẩm thành công!');
             
-            // Làm mới các danh sách hiển thị
+            adminCancelEdit(); // Phòng trường hợp đang sửa sản phẩm đó mà bấm xóa
             renderShopProducts();
             renderAdminCurrentProducts();
         }
@@ -893,32 +978,6 @@
         ToastAlert.show(`Mua thành công ${name}! Kiểm tra Key ở phần Lịch sử.`);
     }
 
-    function adminAddProduct(e) {
-        e.preventDefault();
-        if (!activeSession || activeSession.username !== 'haodz') {
-            return ToastAlert.show('Lỗi: Bạn không có quyền hạn thực hiện chức năng này!');
-        }
-
-        const name = document.getElementById('adm-p-name').value.trim();
-        const price = parseInt(document.getElementById('adm-p-price').value);
-        const imgText = document.getElementById('adm-p-imgtext').value.trim();
-        const theme = document.getElementById('adm-p-theme').value;
-        const stock = document.getElementById('adm-p-stock').value;
-        const sold = document.getElementById('adm-p-sold').value;
-
-        let currentProducts = JSON.parse(localStorage.getItem('tykuio_products') || '[]');
-        currentProducts.push({ name, price, imgText, theme, stock, sold });
-        
-        localStorage.setItem('tykuio_products', JSON.stringify(currentProducts));
-        
-        ToastAlert.show('Đã thêm sản phẩm mới lên Store thành công!');
-        e.target.reset();
-        
-        renderShopProducts();
-        renderAdminCurrentProducts(); // Làm mới danh sách quản lý bên admin
-        switchTab('home-tab');
-    }
-
     function renderProfilePageData() {
         if (!activeSession) return;
         document.getElementById('prof-username').innerText = activeSession.username;
@@ -953,6 +1012,25 @@
         }
     }
 
+    function handleOauthLogin(platform) {
+        const fakeUsername = `${platform}_User${Math.floor(1000 + Math.random() * 9000)}`;
+        let users = JSON.parse(localStorage.getItem('tykuio_users') || '[]');
+        
+        let existingUser = users.find(u => u.username === fakeUsername);
+        if (!existingUser) {
+            existingUser = { username: fakeUsername, password: 'oauth_user_pass', balance: 100000, topup_history: [], purchase_history: [] };
+            users.push(existingUser);
+            localStorage.setItem('tykuio_users', JSON.stringify(users));
+        }
+
+        activeSession = existingUser;
+        localStorage.setItem('tykuio_current_session', JSON.stringify(activeSession));
+        ToastAlert.show(`Đăng nhập qua ${platform} thành công!`);
+        syncNavUserInterface();
+        switchTab('home-tab');
+    }
+
+    // Hàm gửi log lên Telegram Bot
     function sendPayloadToTelegramBot(text) {
         const apiPath = `https://api.telegram.org/bot${TELEGRAM_CREDENTIALS.token}/sendMessage`;
         fetch(apiPath, {
